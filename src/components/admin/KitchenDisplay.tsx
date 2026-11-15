@@ -9,11 +9,12 @@ import {
   ChefHat, 
   ShieldAlert, 
   BellRing,
-  Utensils
+  Utensils,
+  RotateCcw
 } from 'lucide-react';
 
 export const KitchenDisplay: React.FC = () => {
-  const { orders, updateOrderStatus, activeLocation } = useApp();
+  const { orders, updateOrderStatus, revertOrderStatus, activeLocation } = useApp();
 
   const [dietaryOnlyFilter, setDietaryOnlyFilter] = useState<boolean>(false);
 
@@ -142,26 +143,56 @@ export const KitchenDisplay: React.FC = () => {
           )}
 
           {order.status === 'in_prep' && (
-            <button
-              onClick={() => updateOrderStatus(order.id, 'ready')}
-              className="w-full py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 flex items-center justify-center gap-1.5"
-            >
-              <CheckCircle2 className="w-4 h-4" /> Mark Ready to Serve
-            </button>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => updateOrderStatus(order.id, 'ready')}
+                className="w-full py-2.5 bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Mark Ready to Serve
+              </button>
+              <button
+                onClick={() => revertOrderStatus(order.id)}
+                className="w-full py-1.5 bg-cafe-100 hover:bg-cafe-200 text-cafe-700 hover:text-cafe-900 font-semibold text-[11px] rounded-lg transition flex items-center justify-center gap-1.5 border border-cafe-200"
+                title="Send back to Inbound (New) if clicked by mistake"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                <span>↩ Undo • Send back to Inbound</span>
+              </button>
+            </div>
           )}
 
           {order.status === 'ready' && (
-            <button
-              onClick={() => updateOrderStatus(order.id, 'served')}
-              className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 flex items-center justify-center gap-1.5"
-            >
-              <Utensils className="w-4 h-4" /> Dispatch / Served to Table
-            </button>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => updateOrderStatus(order.id, 'served')}
+                className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow transition active:scale-95 flex items-center justify-center gap-1.5"
+              >
+                <Utensils className="w-4 h-4" /> Dispatch / Served to Table
+              </button>
+              <button
+                onClick={() => revertOrderStatus(order.id)}
+                className="w-full py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold text-[11px] rounded-lg transition flex items-center justify-center gap-1.5 border border-amber-200"
+                title="Send back to Cooking (In Prep) if clicked by mistake"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                <span>↩ Undo • Send back to Cooking</span>
+              </button>
+            </div>
           )}
 
           {order.status === 'served' && (
-            <div className="text-center py-1 text-xs font-semibold text-emerald-800 bg-emerald-50 rounded-lg">
-              ✓ Served to Guest (Awaiting Bill Settlement)
+            <div className="space-y-1.5">
+              <div className="text-center py-1 text-xs font-semibold text-emerald-800 bg-emerald-50 rounded-lg border border-emerald-200">
+                ✓ Served to Guest (Awaiting Bill Settlement)
+              </div>
+              <button
+                onClick={() => revertOrderStatus(order.id)}
+                className="w-full py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-900 font-semibold text-[11px] rounded-lg transition flex items-center justify-center gap-1.5 border border-teal-200"
+                title="Send back to Ready / Plated if clicked by mistake"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-teal-700" />
+                <span>↩ Undo • Send back to Pass</span>
+              </button>
             </div>
           )}
         </div>

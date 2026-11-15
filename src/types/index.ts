@@ -50,7 +50,7 @@ export interface Table {
   locationId: string;
   tableNumber: string;
   capacity: number;
-  section: 'Main Hall' | 'Window Lounge' | 'Outdoor Terrace' | 'Private Roastery Room';
+  section: string;
   status: TableStatus;
   currentOrderId?: string;
   seatedPartyName?: string;

@@ -65,10 +65,16 @@ interface AppContextType {
   dietaryFilter: DietaryType | 'all';
   setDietaryFilter: (filter: DietaryType | 'all') => void;
 
-  // Tables
+  // Tables & Sections Management
   tables: Table[];
   updateTableStatus: (tableId: string, status: Table['status'], partyName?: string, partySize?: number) => void;
   seatQueueTicketAtTable: (ticketId: string, tableId: string) => void;
+  addTable: (tableData: Omit<Table, 'id'>) => void;
+  updateTable: (tableId: string, updates: Partial<Table>) => void;
+  deleteTable: (tableId: string) => void;
+  customSections: string[];
+  addCustomSection: (sectionName: string) => void;
+  deleteCustomSection: (sectionName: string) => void;
 
   // Queue
   queue: QueueTicket[];
@@ -80,10 +86,11 @@ interface AppContextType {
   createBooking: (booking: Omit<Booking, 'id' | 'bookingRef' | 'createdAt' | 'status'>) => Booking;
   cancelBooking: (id: string) => void;
 
-  // Orders & KDS
+  // Orders & Kitchen Display System (KDS)
   orders: Order[];
   placeOrder: (type: Order['type'], tableNumber?: string, customerName?: string, customerPhone?: string, specialNotes?: string) => Order;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  revertOrderStatus: (orderId: string) => void;
   processPayment: (orderId: string, method: Order['paymentMethod'], discount?: number) => void;
 
   // Kitchen Inventory & Wastage
@@ -131,11 +138,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const defaultSections = [
+    'Main Hall', 
+    'Window Lounge', 
+    'Outdoor Terrace', 
+    'Private Roastery Room'
+  ];
+
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [activeLocationId, setActiveLocationId] = useState<string>('loc-1');
   const [locations, setLocations] = useState<Location[]>(() => loadStored('locations', initialLocations));
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => loadStored('menu', initialMenuItems));
   const [tables, setTables] = useState<Table[]>(() => loadStored('tables', initialTables));
+  const [customSections, setCustomSections] = useState<string[]>(() => loadStored('custom_sections', defaultSections));
   const [queue, setQueue] = useState<QueueTicket[]>(() => loadStored('queue', initialQueue));
   const [bookings, setBookings] = useState<Booking[]>(() => loadStored('bookings', initialBookings));
   const [orders, setOrders] = useState<Order[]>(() => loadStored('orders', initialOrders));
@@ -156,6 +171,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('aromacraft_locations', JSON.stringify(locations));
     localStorage.setItem('aromacraft_menu', JSON.stringify(menuItems));
     localStorage.setItem('aromacraft_tables', JSON.stringify(tables));
+    localStorage.setItem('aromacraft_custom_sections', JSON.stringify(customSections));
     localStorage.setItem('aromacraft_queue', JSON.stringify(queue));
     localStorage.setItem('aromacraft_bookings', JSON.stringify(bookings));
     localStorage.setItem('aromacraft_orders', JSON.stringify(orders));
@@ -166,7 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('aromacraft_feedback', JSON.stringify(feedbacks));
     localStorage.setItem('aromacraft_staff', JSON.stringify(staff));
     localStorage.setItem('aromacraft_cms', JSON.stringify(cmsProjects));
-  }, [locations, menuItems, tables, queue, bookings, orders, inventory, wastageLogs, suppliers, purchaseOrders, feedbacks, staff, cmsProjects]);
+  }, [locations, menuItems, tables, customSections, queue, bookings, orders, inventory, wastageLogs, suppliers, purchaseOrders, feedbacks, staff, cmsProjects]);
 
   const activeLocation = locations.find(l => l.id === activeLocationId) || locations[0];
 
@@ -216,7 +232,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Table Management
+  // Table Management (Status, Seating, Add, Edit, Remove, Sections)
   const updateTableStatus = (tableId: string, status: Table['status'], partyName?: string, partySize?: number) => {
     setTables(prev => prev.map(tbl => {
       if (tbl.id === tableId) {
@@ -241,6 +257,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     updateTableStatus(tableId, 'occupied', ticket.customerName, ticket.partySize);
     setQueue(prev => prev.map(q => q.id === ticketId ? { ...q, status: 'seated' } : q));
     showToast('Party Seated', `${ticket.customerName} assigned to table`, 'success');
+  };
+
+  const addTable = (tableData: Omit<Table, 'id'>) => {
+    const newTable: Table = {
+      ...tableData,
+      id: 'tbl-' + Date.now(),
+    };
+    setTables(prev => [...prev, newTable]);
+
+    // Update location tables count
+    setLocations(prev => prev.map(l => l.id === tableData.locationId ? { ...l, tablesCount: l.tablesCount + 1 } : l));
+
+    showToast('Table Created', `Table ${newTable.tableNumber} added to ${newTable.section}`, 'success');
+  };
+
+  const updateTable = (tableId: string, updates: Partial<Table>) => {
+    setTables(prev => prev.map(t => t.id === tableId ? { ...t, ...updates } : t));
+    showToast('Table Updated', 'Table configuration modified', 'success');
+  };
+
+  const deleteTable = (tableId: string) => {
+    const tbl = tables.find(t => t.id === tableId);
+    if (tbl) {
+      setLocations(prev => prev.map(l => l.id === tbl.locationId ? { ...l, tablesCount: Math.max(0, l.tablesCount - 1) } : l));
+    }
+    setTables(prev => prev.filter(t => t.id !== tableId));
+    showToast('Table Removed', `Table ${tbl?.tableNumber || ''} removed from floor plan`, 'info');
+  };
+
+  const addCustomSection = (sectionName: string) => {
+    const trimmed = sectionName.trim();
+    if (!trimmed) return;
+    if (customSections.includes(trimmed)) {
+      showToast('Section Exists', `"${trimmed}" is already an active section`, 'warning');
+      return;
+    }
+    setCustomSections(prev => [...prev, trimmed]);
+    showToast('Section Created', `"${trimmed}" section added to floor plan`, 'success');
+  };
+
+  const deleteCustomSection = (sectionName: string) => {
+    setCustomSections(prev => prev.filter(s => s !== sectionName));
+    showToast('Section Removed', `"${sectionName}" section deleted`, 'info');
   };
 
   // Queue
@@ -289,7 +348,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Booking Cancelled', 'The reservation was cancelled', 'warning');
   };
 
-  // Orders & KDS
+  // Orders & KDS (with Advance and Revert/Undo)
   const placeOrder = (type: Order['type'], tableNumber?: string, customerName?: string, customerPhone?: string, specialNotes?: string) => {
     if (cart.length === 0) throw new Error('Cart is empty');
 
@@ -346,6 +405,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return ord;
     }));
     showToast('Kitchen Status Updated', `Order ${status.toUpperCase().replace('_', ' ')}`, 'info');
+  };
+
+  // Revert order backward if clicked by mistake
+  const revertOrderStatus = (orderId: string) => {
+    const ord = orders.find(o => o.id === orderId);
+    if (!ord) return;
+
+    let prevStatus: Order['status'] = 'new';
+    let message = '';
+
+    if (ord.status === 'in_prep') {
+      prevStatus = 'new';
+      message = `Order #${ord.orderNumber} sent back to Inbound (New)`;
+    } else if (ord.status === 'ready') {
+      prevStatus = 'in_prep';
+      message = `Order #${ord.orderNumber} sent back to Cooking (In Prep)`;
+    } else if (ord.status === 'served') {
+      prevStatus = 'ready';
+      message = `Order #${ord.orderNumber} sent back to Pass (Plated / Ready)`;
+    } else if (ord.status === 'billed') {
+      prevStatus = 'served';
+      message = `Order #${ord.orderNumber} reverted to Served`;
+    } else {
+      return;
+    }
+
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: prevStatus } : o));
+    showToast('Status Reverted', message, 'warning');
   };
 
   const processPayment = (orderId: string, method: Order['paymentMethod'] = 'UPI / Card', discount = 0) => {
@@ -527,6 +614,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLocations(initialLocations);
     setMenuItems(initialMenuItems);
     setTables(initialTables);
+    setCustomSections(defaultSections);
     setQueue(initialQueue);
     setBookings(initialBookings);
     setOrders(initialOrders);
@@ -564,6 +652,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         tables,
         updateTableStatus,
         seatQueueTicketAtTable,
+        addTable,
+        updateTable,
+        deleteTable,
+        customSections,
+        addCustomSection,
+        deleteCustomSection,
         queue,
         joinQueue,
         updateQueueStatus,
@@ -573,6 +667,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         orders,
         placeOrder,
         updateOrderStatus,
+        revertOrderStatus,
         processPayment,
         inventory,
         wastageLogs,
