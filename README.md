@@ -94,11 +94,27 @@ Switch between 7 dedicated roles with granular view and operational permissions:
 
 ---
 
-## 🚀 Getting Started
+## 🌐 Live Subdomain & Cloudflare DNS Setup
 
-### Prerequisites
-- Node.js (v18+ recommended)
-- npm (v9+ recommended)
+- **Subdomain**: [http://cafe.nistta.com](http://cafe.nistta.com)
+- **GitHub Repository**: [https://github.com/SureshMateti-works25/cafe](https://github.com/SureshMateti-works25/cafe)
+- **GitHub Pages Origin**: `sureshmateti-works25.github.io` (Serving `HTTP 200 OK` with custom `CNAME: cafe.nistta.com`)
+
+### ⚡ 1-Minute Cloudflare DNS Configuration
+Because `nistta.com` is hosted on Cloudflare nameservers (`jasper.ns.cloudflare.com` & `sneh.ns.cloudflare.com`), configure the DNS record in your Cloudflare dashboard:
+
+1. Open **[dash.cloudflare.com](https://dash.cloudflare.com/)** ➔ Select **`nistta.com`** ➔ **DNS Records**.
+2. Edit or add the record for the `cafe` subdomain:
+   - **Type**: `CNAME`
+   - **Name**: `cafe`
+   - **Target**: `sureshmateti-works25.github.io`
+   - **Proxy status**: **DNS Only (Grey Cloud)** *(Switch to DNS Only so GitHub Pages completes its SSL handshake and provisions the free Let's Encrypt certificate)*
+   - **TTL**: Auto
+3. In **GitHub Repository**:
+   - Go to **[https://github.com/SureshMateti-works25/cafe/settings/pages](https://github.com/SureshMateti-works25/cafe/settings/pages)**.
+   - You will see `Custom domain: cafe.nistta.com` is verified. Check **"Enforce HTTPS"**.
+4. (Optional) Once HTTPS is verified on GitHub, you can toggle the Cloudflare Proxy icon back to **Proxied (Orange Cloud)** with Cloudflare SSL/TLS set to **Full**.
+
 
 ### Installation & Run
 ```bash
