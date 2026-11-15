@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenFeedback, onNa
                       <div className="text-[11px] text-cafe-500 truncate">{loc.address}</div>
                       <div className="flex items-center gap-2 mt-1 text-[10px]">
                         <span className="text-emerald-700 font-medium font-mono">
-                          Today: ${loc.todayRevenue.toLocaleString()}
+                          Today: ₹{loc.todayRevenue.toLocaleString()}
                         </span>
                         <span className="text-cafe-400">•</span>
                         <span className="text-cafe-600">

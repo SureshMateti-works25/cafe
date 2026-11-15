@@ -77,7 +77,7 @@ export const CentralDashboard: React.FC<CentralDashboardProps> = ({ onNavigateTa
           </div>
           <div className="mt-2">
             <span className="font-serif font-bold text-2xl text-cafe-950">
-              ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹{totalRevenue.toLocaleString()}
             </span>
             <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-1">
               <TrendingUp className="w-3 h-3" /> +14.2% vs yesterday
@@ -131,7 +131,7 @@ export const CentralDashboard: React.FC<CentralDashboardProps> = ({ onNavigateTa
           </div>
           <div className="mt-2">
             <span className="font-serif font-bold text-2xl text-red-600 font-mono">
-              ${totalWastageCost.toFixed(2)}
+              ₹{totalWastageCost.toLocaleString()}
             </span>
             <div className="text-[11px] text-cafe-500 mt-1">
               {wastageLogs.length} incidents logged
@@ -195,7 +195,7 @@ export const CentralDashboard: React.FC<CentralDashboardProps> = ({ onNavigateTa
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-cafe-500">Today's Revenue:</span>
                       <span className="font-serif font-bold text-cafe-950 text-sm">
-                        ${loc.todayRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        ₹{loc.todayRevenue.toLocaleString()}
                       </span>
                     </div>
 

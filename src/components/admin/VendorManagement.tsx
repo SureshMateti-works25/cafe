@@ -201,7 +201,7 @@ export const VendorManagement: React.FC = () => {
                       ))}
                     </td>
                     <td className="p-4 font-mono font-bold text-cafe-950 text-sm">
-                      ${po.totalAmount.toFixed(2)}
+                      ₹{po.totalAmount.toLocaleString()}
                     </td>
                     <td className="p-4 font-mono text-cafe-600">
                       {po.expectedDelivery}
@@ -314,11 +314,11 @@ export const VendorManagement: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-bold text-cafe-800 uppercase tracking-wider block mb-1">
-                    Unit Price ($)
+                    Unit Price (₹)
                   </label>
                   <input
                     type="number"
-                    step="0.1"
+                    step="1"
                     min="0"
                     value={poUnitPrice}
                     onChange={e => setPoUnitPrice(+e.target.value)}
@@ -342,7 +342,7 @@ export const VendorManagement: React.FC = () => {
               <div className="p-3 bg-cafe-100 rounded-xl flex justify-between items-center text-xs">
                 <span className="text-cafe-600 font-semibold">Total PO Valuation:</span>
                 <span className="font-serif font-bold text-sm text-cafe-950">
-                  ${(poQuantity * poUnitPrice).toFixed(2)}
+                  ₹{(poQuantity * poUnitPrice).toLocaleString()}
                 </span>
               </div>
 

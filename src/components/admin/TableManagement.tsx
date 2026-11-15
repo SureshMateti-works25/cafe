@@ -352,7 +352,7 @@ export const TableManagement: React.FC<TableManagementProps> = ({ onNavigateTab 
                       </h5>
                     </div>
                     <span className="font-serif font-bold text-base text-amber-950">
-                      ${tableOrder.total.toFixed(2)}
+                      ₹{tableOrder.total.toLocaleString()}
                     </span>
                   </div>
 
@@ -360,7 +360,7 @@ export const TableManagement: React.FC<TableManagementProps> = ({ onNavigateTab 
                     {tableOrder.items.map((it, i) => (
                       <div key={i} className="py-1.5 flex justify-between">
                         <span>{it.quantity}x {it.name}</span>
-                        <span className="font-mono">${(it.price * it.quantity).toFixed(2)}</span>
+                        <span className="font-mono">₹{(it.price * it.quantity).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>

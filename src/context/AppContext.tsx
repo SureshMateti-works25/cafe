@@ -102,9 +102,12 @@ interface AppContextType {
   feedbacks: Feedback[];
   submitFeedback: (feedback: Omit<Feedback, 'id' | 'date' | 'verifiedVisit'>) => void;
 
-  // HR & Staff
+  // HR Staff Management (Add, Update, Remove, Clock-in)
   staff: HRStaff[];
   toggleClockIn: (staffId: string) => void;
+  addStaff: (staffData: Omit<HRStaff, 'id' | 'isClockedIn'>) => void;
+  updateStaff: (id: string, updates: Partial<HRStaff>) => void;
+  removeStaff: (id: string) => void;
 
   // CMS Projects & Content
   cmsProjects: CMSProject[];
@@ -119,7 +122,6 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load state from local storage or fallback to initial mocks
   const loadStored = <T,>(key: string, fallback: T): T => {
     try {
       const item = localStorage.getItem(`aromacraft_${key}`);
@@ -258,7 +260,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes,
     };
     setQueue(prev => [...prev, newTicket]);
-    showToast('Virtual Queue Ticket Generated', `Ticket #${nextNum} created! Check your phone for updates.`, 'success');
+    showToast('Virtual Queue Ticket Generated', `Ticket #${nextNum} created! Check your phone for SMS alerts.`, 'success');
     return newTicket;
   };
 
@@ -292,8 +294,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (cart.length === 0) throw new Error('Cart is empty');
 
     const sub = cartTotal;
-    const tax = +(sub * 0.05).toFixed(2);
-    const svc = +(sub * 0.05).toFixed(2);
+    const tax = Math.round(sub * 0.05);
+    const svc = Math.round(sub * 0.05);
     const orderNum = 'ORD-' + Math.floor(5400 + Math.random() * 1000);
 
     const newOrder: Order = {
@@ -311,7 +313,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       tax,
       serviceCharge: svc,
       discount: 0,
-      total: +(sub + tax + svc).toFixed(2),
+      total: sub + tax + svc,
       paymentStatus: 'pending',
       createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
@@ -319,7 +321,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
 
-    // If dining in at a table, attach order to table
     if (tableNumber) {
       const tbl = tables.find(t => t.tableNumber === tableNumber && t.locationId === activeLocationId);
       if (tbl) {
@@ -327,7 +328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    showToast('Order Placed!', `Order #${orderNum} dispatched to the kitchen`, 'success');
+    showToast('Order Placed!', `Order #${orderNum} dispatched to kitchen KDS`, 'success');
     return newOrder;
   };
 
@@ -350,7 +351,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const processPayment = (orderId: string, method: Order['paymentMethod'] = 'UPI / Card', discount = 0) => {
     setOrders(prev => prev.map(ord => {
       if (ord.id === orderId) {
-        const finalTot = Math.max(0, +(ord.total - discount).toFixed(2));
+        const finalTot = Math.max(0, ord.total - discount);
         return {
           ...ord,
           discount,
@@ -363,12 +364,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return ord;
     }));
 
-    // Update location revenue
     const ord = orders.find(o => o.id === orderId);
     if (ord) {
       setLocations(prev => prev.map(loc => {
         if (loc.id === ord.locationId) {
-          return { ...loc, todayRevenue: +(loc.todayRevenue + ord.total).toFixed(2) };
+          return { ...loc, todayRevenue: loc.todayRevenue + ord.total };
         }
         return loc;
       }));
@@ -382,7 +382,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const item = inventory.find(i => i.id === itemId);
     if (!item) return;
 
-    const costImpact = +(quantity * item.unitCost).toFixed(2);
+    const costImpact = Math.round(quantity * item.unitCost);
     const newLog: WastageLog = {
       id: 'wst-' + Date.now(),
       locationId: activeLocationId,
@@ -399,7 +399,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setWastageLogs(prev => [newLog, ...prev]);
 
-    // Deduct stock from inventory
     setInventory(prev => prev.map(inv => {
       if (inv.id === itemId) {
         return { ...inv, currentStock: Math.max(0, +(inv.currentStock - quantity).toFixed(1)) };
@@ -407,7 +406,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return inv;
     }));
 
-    showToast('Wastage Recorded', `Logged ${quantity} ${item.unit} loss ($${costImpact})`, 'warning');
+    showToast('Wastage Recorded', `Logged ${quantity} ${item.unit} loss (₹${costImpact.toLocaleString()})`, 'warning');
   };
 
   const restockInventory = (itemId: string, quantity: number) => {
@@ -428,8 +427,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const createPurchaseOrder = (supplierId: string, items: { itemName: string; quantity: number; unit: string; unitPrice: number }[], deliveryDate: string) => {
     const sup = suppliers.find(s => s.id === supplierId);
     const poNum = 'PO-2026-' + String(purchaseOrders.length + 91).padStart(3, '0');
-    const itemsCalculated = items.map(i => ({ ...i, total: +(i.quantity * i.unitPrice).toFixed(2) }));
-    const totalAmount = +itemsCalculated.reduce((sum, i) => sum + i.total, 0).toFixed(2);
+    const itemsCalculated = items.map(i => ({ ...i, total: Math.round(i.quantity * i.unitPrice) }));
+    const totalAmount = itemsCalculated.reduce((sum, i) => sum + i.total, 0);
 
     const newPO: PurchaseOrder = {
       id: 'po-' + Date.now(),
@@ -466,7 +465,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Thank You!', 'Your review and dietary feedback helps us improve', 'success');
   };
 
-  // Staff & Attendance
+  // Staff & Attendance Full CRUD
   const toggleClockIn = (staffId: string) => {
     setStaff(prev => prev.map(s => {
       if (s.id === staffId) {
@@ -480,6 +479,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return s;
     }));
     showToast('Attendance Logged', 'Staff clock status updated', 'info');
+  };
+
+  const addStaff = (staffData: Omit<HRStaff, 'id' | 'isClockedIn'>) => {
+    const newMember: HRStaff = {
+      ...staffData,
+      id: 'st-' + Date.now(),
+      isClockedIn: false,
+    };
+    setStaff(prev => [newMember, ...prev]);
+    showToast('Staff Member Added', `${newMember.name} has been enrolled in the roster`, 'success');
+  };
+
+  const updateStaff = (id: string, updates: Partial<HRStaff>) => {
+    setStaff(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    showToast('Staff Details Updated', 'Profile modifications saved successfully', 'success');
+  };
+
+  const removeStaff = (id: string) => {
+    const member = staff.find(s => s.id === id);
+    setStaff(prev => prev.filter(s => s.id !== id));
+    showToast('Staff Member Removed', `${member?.name || 'Employee'} removed from roster`, 'info');
   };
 
   // CMS Projects
@@ -517,7 +537,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFeedbacks(initialFeedback);
     setStaff(initialHRStaff);
     setCmsProjects(initialCMSProjects);
-    showToast('Reset Complete', 'Enterprise demo dataset restored to factory defaults', 'info');
+    showToast('Reset Complete', 'Enterprise demo dataset restored to Indian Rupees (₹) defaults', 'info');
   };
 
   return (
@@ -566,6 +586,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitFeedback,
         staff,
         toggleClockIn,
+        addStaff,
+        updateStaff,
+        removeStaff,
         cmsProjects,
         addCMSProject,
         updateCMSProject,

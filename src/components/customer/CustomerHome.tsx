@@ -258,7 +258,7 @@ export const CustomerHome: React.FC<CustomerHomeProps> = ({ onNavigateTab, onOpe
 
                 <div className="mt-4 pt-3 border-t border-cafe-100 flex items-center justify-between">
                   <span className="font-serif font-bold text-base text-cafe-950">
-                    ${item.price.toFixed(2)}
+                    ₹{item.price.toLocaleString()}
                   </span>
                   <button
                     onClick={() => addToCart(item)}

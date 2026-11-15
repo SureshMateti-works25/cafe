@@ -135,7 +135,7 @@ export const InventoryWastage: React.FC = () => {
           <div>
             <span className="text-xs text-cafe-500 font-semibold block">Total Wastage Cost (This Week)</span>
             <span className="font-serif font-bold text-2xl text-red-600 font-mono mt-1 block">
-              ${totalWastageCost.toFixed(2)}
+              ₹{totalWastageCost.toLocaleString()}
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
@@ -251,7 +251,7 @@ export const InventoryWastage: React.FC = () => {
                           {item.minThreshold} {item.unit}
                         </td>
                         <td className="p-4 font-mono text-cafe-900 font-semibold">
-                          ${item.unitCost.toFixed(2)}
+                          ₹{item.unitCost.toLocaleString()}
                         </td>
                         <td className="p-4 text-cafe-700 font-medium">
                           {item.supplierName}
@@ -321,7 +321,7 @@ export const InventoryWastage: React.FC = () => {
                         {log.quantity} {log.unit}
                       </td>
                       <td className="p-4 font-mono font-bold text-red-600 text-sm">
-                        ${log.costImpact.toFixed(2)}
+                        ₹{log.costImpact.toLocaleString()}
                       </td>
                       <td className="p-4 text-cafe-700 font-medium">
                         {log.loggedBy}
@@ -367,7 +367,7 @@ export const InventoryWastage: React.FC = () => {
                 >
                   {locationInventory.map(item => (
                     <option key={item.id} value={item.id}>
-                      {item.name} (${item.unitCost.toFixed(2)} / {item.unit})
+                      {item.name} (₹{item.unitCost.toLocaleString()} / {item.unit})
                     </option>
                   ))}
                 </select>

@@ -117,7 +117,7 @@ export const BillingPOS: React.FC = () => {
 
                       <div className="text-right">
                         <span className="font-serif font-bold text-base text-cafe-950 block">
-                          ${ord.total.toFixed(2)}
+                          ₹{ord.total.toLocaleString()}
                         </span>
                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                           ord.status === 'billed' ? 'bg-purple-100 text-purple-800' : 'bg-amber-100 text-amber-800'
@@ -182,9 +182,9 @@ export const BillingPOS: React.FC = () => {
                               </span>
                             )}
                           </td>
-                          <td className="py-2.5 text-right font-mono text-cafe-600">${it.price.toFixed(2)}</td>
+                          <td className="py-2.5 text-right font-mono text-cafe-600">₹{it.price.toLocaleString()}</td>
                           <td className="py-2.5 text-right font-mono font-bold text-cafe-950">
-                            ${(it.price * it.quantity).toFixed(2)}
+                            ₹{(it.price * it.quantity).toLocaleString()}
                           </td>
                         </tr>
                       ))}
@@ -196,20 +196,20 @@ export const BillingPOS: React.FC = () => {
                 <div className="p-4 bg-cafe-50 rounded-2xl border border-cafe-200 space-y-2 text-xs">
                   <div className="flex justify-between text-cafe-600">
                     <span>Subtotal:</span>
-                    <span className="font-mono">${activeOrder.subtotal.toFixed(2)}</span>
+                    <span className="font-mono">₹{activeOrder.subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-cafe-600">
                     <span>CGST (2.5%):</span>
-                    <span className="font-mono">${(activeOrder.tax / 2).toFixed(2)}</span>
+                    <span className="font-mono">₹{Math.round(activeOrder.tax / 2).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-cafe-600">
                     <span>SGST (2.5%):</span>
-                    <span className="font-mono">${(activeOrder.tax / 2).toFixed(2)}</span>
+                    <span className="font-mono">₹{Math.round(activeOrder.tax / 2).toLocaleString()}</span>
                   </div>
                   {activeOrder.serviceCharge > 0 && (
                     <div className="flex justify-between text-cafe-600">
                       <span>Service Hospitality (5%):</span>
-                      <span className="font-mono">${activeOrder.serviceCharge.toFixed(2)}</span>
+                      <span className="font-mono">₹{activeOrder.serviceCharge.toLocaleString()}</span>
                     </div>
                   )}
 
@@ -217,18 +217,18 @@ export const BillingPOS: React.FC = () => {
                   <div className="pt-2 border-t border-cafe-200 flex items-center justify-between">
                     <span className="font-semibold text-cafe-700">Loyalty / Manager Discount:</span>
                     <div className="flex items-center gap-1.5">
-                      {[0, 2, 5, 10].map(disc => (
+                      {[0, 50, 100, 200].map(disc => (
                         <button
                           key={disc}
                           type="button"
                           onClick={() => setDiscountAmount(disc)}
-                          className={`px-2 py-0.5 rounded text-[11px] font-bold border ${
+                          className={`px-2.5 py-0.5 rounded text-[11px] font-bold border ${
                             discountAmount === disc
                               ? 'bg-amber-600 text-white border-amber-700'
                               : 'bg-white text-cafe-700 border-cafe-300'
                           }`}
                         >
-                          ${disc}
+                          ₹{disc}
                         </button>
                       ))}
                     </div>
@@ -237,7 +237,7 @@ export const BillingPOS: React.FC = () => {
                   <div className="pt-2 border-t border-cafe-200 flex justify-between font-bold text-sm text-cafe-950">
                     <span>Final Amount Due:</span>
                     <span className="font-serif text-lg text-amber-900 font-bold">
-                      ${Math.max(0, +(activeOrder.total - discountAmount)).toFixed(2)}
+                      ₹{Math.max(0, activeOrder.total - discountAmount).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export const BillingPOS: React.FC = () => {
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>
-                    Settle & Print Receipt (${Math.max(0, +(activeOrder.total - discountAmount)).toFixed(2)})
+                    Settle & Print Receipt (₹{Math.max(0, activeOrder.total - discountAmount).toLocaleString()})
                   </span>
                 </button>
               </div>
@@ -363,7 +363,7 @@ export const BillingPOS: React.FC = () => {
                       {it.quantity}x {it.name}
                       {it.customization?.jainPrep && ' [JAIN]'}
                     </span>
-                    <span>${(it.price * it.quantity).toFixed(2)}</span>
+                    <span>₹{(it.price * it.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -372,31 +372,31 @@ export const BillingPOS: React.FC = () => {
               <div className="space-y-1 pt-1 text-[11px]">
                 <div className="flex justify-between text-neutral-600">
                   <span>Subtotal:</span>
-                  <span>${invoiceModalOrder.subtotal.toFixed(2)}</span>
+                  <span>₹{invoiceModalOrder.subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
                   <span>CGST (2.5%):</span>
-                  <span>${(invoiceModalOrder.tax / 2).toFixed(2)}</span>
+                  <span>₹{Math.round(invoiceModalOrder.tax / 2).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
                   <span>SGST (2.5%):</span>
-                  <span>${(invoiceModalOrder.tax / 2).toFixed(2)}</span>
+                  <span>₹{Math.round(invoiceModalOrder.tax / 2).toLocaleString()}</span>
                 </div>
                 {invoiceModalOrder.serviceCharge > 0 && (
                   <div className="flex justify-between text-neutral-600">
                     <span>Service Hospitality (5%):</span>
-                    <span>${invoiceModalOrder.serviceCharge.toFixed(2)}</span>
+                    <span>₹{invoiceModalOrder.serviceCharge.toLocaleString()}</span>
                   </div>
                 )}
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-700 font-bold">
                     <span>Discount Applied:</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-₹{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-sm border-t border-neutral-900 pt-2 text-neutral-950">
                   <span>Total Settled:</span>
-                  <span>${Math.max(0, invoiceModalOrder.total - discountAmount).toFixed(2)}</span>
+                  <span>₹{Math.max(0, invoiceModalOrder.total - discountAmount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-neutral-500 pt-1">
                   <span>Payment Mode:</span>

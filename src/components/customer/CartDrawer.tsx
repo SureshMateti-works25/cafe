@@ -123,7 +123,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex justify-between pt-2 border-t border-cafe-200 font-bold text-sm">
                   <span>Grand Total:</span>
-                  <span className="text-amber-700">${placedOrder.total.toFixed(2)}</span>
+                  <span className="text-amber-700">₹{placedOrder.total.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -221,7 +221,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                           {item.name}
                         </div>
                         <div className="font-serif font-bold text-xs text-amber-900 mt-0.5">
-                          ${item.price.toFixed(2)}
+                          ₹{item.price.toLocaleString()}
                         </div>
 
                         {/* Customizations tags */}
@@ -301,21 +301,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               <div className="bg-cafe-100/70 rounded-2xl p-4 border border-cafe-200/80 space-y-1.5 text-xs">
                 <div className="flex justify-between text-cafe-600">
                   <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-cafe-600">
                   <span>GST (5%):</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>₹{tax.toLocaleString()}</span>
                 </div>
                 {orderType === 'dine_in' && (
                   <div className="flex justify-between text-cafe-600">
                     <span>Service Charge (5%):</span>
-                    <span>${serviceCharge.toFixed(2)}</span>
+                    <span>₹{serviceCharge.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-cafe-950 font-bold text-sm pt-2 border-t border-cafe-200">
                   <span>Total Payable:</span>
-                  <span className="font-serif text-base text-amber-900">${grandTotal.toFixed(2)}</span>
+                  <span className="font-serif text-base text-amber-900">₹{grandTotal.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -329,7 +329,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               onClick={handleCheckout}
               className="w-full py-3.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm rounded-2xl shadow-xl shadow-amber-600/30 transition-all active:scale-98 flex items-center justify-center gap-2"
             >
-              <span>Dispatch Order (${grandTotal.toFixed(2)})</span>
+              <span>Dispatch Order (₹{grandTotal.toLocaleString()})</span>
             </button>
           </div>
         )}

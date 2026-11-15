@@ -327,7 +327,7 @@ export const OnlineMenu: React.FC<OnlineMenuProps> = ({ onOpenCart }) => {
                 <div>
                   <span className="text-[10px] text-cafe-500 uppercase font-semibold">Price</span>
                   <div className="font-serif font-bold text-lg sm:text-xl text-cafe-950">
-                    ${item.price.toFixed(2)}
+                    ₹{item.price.toLocaleString()}
                   </div>
                 </div>
 
@@ -469,7 +469,7 @@ export const OnlineMenu: React.FC<OnlineMenuProps> = ({ onOpenCart }) => {
               <div>
                 <span className="text-[10px] text-cafe-500 uppercase">Item Price</span>
                 <div className="font-serif font-bold text-lg text-cafe-950">
-                  ${customizingItem.price.toFixed(2)}
+                  ₹{customizingItem.price.toLocaleString()}
                 </div>
               </div>
               <button
