@@ -31,20 +31,29 @@ A mobile-friendly, full-featured enterprise web application for single and multi
 
 ---
 
-### 3. 🍽️ Interactive Table Management & Floor Plan
-- **Real-Time Visual Floor Plan**: Filter by sections (`Main Hall`, `Window Lounge`, `Outdoor Terrace`, `Private Roastery Room`).
+### 3. 🍽️ Interactive Table Management & Dynamic Floor Plan
+- **Real-Time Visual Floor Plan**: Filter by preconfigured or custom sections (`Main Hall`, `Window Lounge`, `Outdoor Terrace`, `Private Roastery Room`, or user-added zones).
+- **Dynamic Section Management**: Add new custom floor sections (e.g. `Rooftop Terrace`, `VIP Cabana`, `Courtyard Garden`) and delete empty sections with a single click.
+- **Full Table CRUD Operations**:
+  - **Add Table**: Create new tables with custom numbers (`T-11`, `R-01`), seating capacities (2–12 guests), and target sections.
+  - **Edit Table**: Modify table numbers, guest capacities, or reassign sections from the table drawer.
+  - **Delete Table**: Remove tables from the floor plan with safety confirmation dialogs.
 - **Status Badges**: `Available`, `Occupied`, `Reserved`, `Billed`, and `Cleaning`.
 - **Queue-to-Table Seating**: 1-click seating of waiting queue tickets directly onto available tables.
 - **Table Control Drawer**: Reassign states, view active guest bills, and release cleaned tables.
 
 ---
 
-### 4. 👨‍🍳 Kitchen Display System (KDS)
+### 4. 👨‍🍳 Kitchen Display System (KDS) & Error Undo Pipeline
 - **4-Stage Kanban Pipeline**: `1. Inbound New` ➔ `2. In Prep` ➔ `3. At Pass / Plated` ➔ `4. Served to Guest`.
+- **↩ Undo / Revert Back in Board**: Kitchen staff and baristas can immediately revert an order back to the previous column if tapped by mistake:
+  - `In Prep` ➔ `↩ Undo • Send back to Inbound`
+  - `At Pass / Ready` ➔ `↩ Undo • Send back to Cooking`
+  - `Served to Guest` ➔ `↩ Undo • Send back to Pass`
 - **Prominent High-Contrast Dietary Alerts**:
   - **JAIN ALERT 🕊️**: Flashing banner mandating dedicated clean cookware and zero root vegetables.
   - **VEGAN ALERT 🌿**: Plant-based milk and dairy-free separation alert.
-- Preparation timers and single-click ticket advancement.
+- Preparation timers, single-click ticket advancement, and live dietary-only filter.
 
 ---
 
