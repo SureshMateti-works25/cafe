@@ -1,0 +1,587 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  Location,
+  MenuItem,
+  Table,
+  QueueTicket,
+  Booking,
+  Order,
+  OrderItem,
+  InventoryItem,
+  WastageLog,
+  Supplier,
+  PurchaseOrder,
+  Feedback,
+  HRStaff,
+  CMSProject,
+  UserRole,
+  DietaryType
+} from '../types';
+import {
+  initialLocations,
+  initialMenuItems,
+  initialTables,
+  initialQueue,
+  initialBookings,
+  initialOrders,
+  initialInventory,
+  initialWastageLogs,
+  initialSuppliers,
+  initialPurchaseOrders,
+  initialFeedback,
+  initialHRStaff,
+  initialCMSProjects
+} from '../data/mockData';
+
+interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  title: string;
+  message: string;
+}
+
+interface AppContextType {
+  // Navigation & Role
+  currentRole: UserRole;
+  setCurrentRole: (role: UserRole) => void;
+  activeLocationId: string;
+  setActiveLocationId: (id: string) => void;
+  activeLocation: Location;
+  locations: Location[];
+
+  // Toast
+  toasts: Toast[];
+  showToast: (title: string, message: string, type?: Toast['type']) => void;
+  dismissToast: (id: string) => void;
+
+  // Menu & Cart
+  menuItems: MenuItem[];
+  cart: OrderItem[];
+  addToCart: (item: MenuItem, customization?: OrderItem['customization']) => void;
+  removeFromCart: (index: number) => void;
+  updateCartQuantity: (index: number, delta: number) => void;
+  clearCart: () => void;
+  cartTotal: number;
+  dietaryFilter: DietaryType | 'all';
+  setDietaryFilter: (filter: DietaryType | 'all') => void;
+
+  // Tables
+  tables: Table[];
+  updateTableStatus: (tableId: string, status: Table['status'], partyName?: string, partySize?: number) => void;
+  seatQueueTicketAtTable: (ticketId: string, tableId: string) => void;
+
+  // Queue
+  queue: QueueTicket[];
+  joinQueue: (name: string, phone: string, partySize: number, dietary: 'all' | 'veg' | 'vegan' | 'jain', notes?: string) => QueueTicket;
+  updateQueueStatus: (ticketId: string, status: QueueTicket['status']) => void;
+
+  // Bookings
+  bookings: Booking[];
+  createBooking: (booking: Omit<Booking, 'id' | 'bookingRef' | 'createdAt' | 'status'>) => Booking;
+  cancelBooking: (id: string) => void;
+
+  // Orders & KDS
+  orders: Order[];
+  placeOrder: (type: Order['type'], tableNumber?: string, customerName?: string, customerPhone?: string, specialNotes?: string) => Order;
+  updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  processPayment: (orderId: string, method: Order['paymentMethod'], discount?: number) => void;
+
+  // Kitchen Inventory & Wastage
+  inventory: InventoryItem[];
+  wastageLogs: WastageLog[];
+  logWastage: (itemId: string, quantity: number, reason: WastageLog['reason'], loggedBy: string, notes?: string) => void;
+  restockInventory: (itemId: string, quantity: number) => void;
+
+  // Suppliers & POs
+  suppliers: Supplier[];
+  purchaseOrders: PurchaseOrder[];
+  createPurchaseOrder: (supplierId: string, items: { itemName: string; quantity: number; unit: string; unitPrice: number }[], deliveryDate: string) => PurchaseOrder;
+  updatePOStatus: (poId: string, status: PurchaseOrder['status']) => void;
+
+  // Feedback
+  feedbacks: Feedback[];
+  submitFeedback: (feedback: Omit<Feedback, 'id' | 'date' | 'verifiedVisit'>) => void;
+
+  // HR & Staff
+  staff: HRStaff[];
+  toggleClockIn: (staffId: string) => void;
+
+  // CMS Projects & Content
+  cmsProjects: CMSProject[];
+  addCMSProject: (project: Omit<CMSProject, 'id'>) => void;
+  updateCMSProject: (id: string, updates: Partial<CMSProject>) => void;
+  deleteCMSProject: (id: string) => void;
+
+  // Reset
+  resetToDemoData: () => void;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Load state from local storage or fallback to initial mocks
+  const loadStored = <T,>(key: string, fallback: T): T => {
+    try {
+      const item = localStorage.getItem(`aromacraft_${key}`);
+      return item ? JSON.parse(item) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const [currentRole, setCurrentRole] = useState<UserRole>('customer');
+  const [activeLocationId, setActiveLocationId] = useState<string>('loc-1');
+  const [locations, setLocations] = useState<Location[]>(() => loadStored('locations', initialLocations));
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => loadStored('menu', initialMenuItems));
+  const [tables, setTables] = useState<Table[]>(() => loadStored('tables', initialTables));
+  const [queue, setQueue] = useState<QueueTicket[]>(() => loadStored('queue', initialQueue));
+  const [bookings, setBookings] = useState<Booking[]>(() => loadStored('bookings', initialBookings));
+  const [orders, setOrders] = useState<Order[]>(() => loadStored('orders', initialOrders));
+  const [inventory, setInventory] = useState<InventoryItem[]>(() => loadStored('inventory', initialInventory));
+  const [wastageLogs, setWastageLogs] = useState<WastageLog[]>(() => loadStored('wastage', initialWastageLogs));
+  const [suppliers, setSuppliers] = useState<Supplier[]>(() => loadStored('suppliers', initialSuppliers));
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(() => loadStored('pos', initialPurchaseOrders));
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>(() => loadStored('feedback', initialFeedback));
+  const [staff, setStaff] = useState<HRStaff[]>(() => loadStored('staff', initialHRStaff));
+  const [cmsProjects, setCmsProjects] = useState<CMSProject[]>(() => loadStored('cms', initialCMSProjects));
+
+  const [cart, setCart] = useState<OrderItem[]>([]);
+  const [dietaryFilter, setDietaryFilter] = useState<DietaryType | 'all'>('all');
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Sync state to LocalStorage
+  useEffect(() => {
+    localStorage.setItem('aromacraft_locations', JSON.stringify(locations));
+    localStorage.setItem('aromacraft_menu', JSON.stringify(menuItems));
+    localStorage.setItem('aromacraft_tables', JSON.stringify(tables));
+    localStorage.setItem('aromacraft_queue', JSON.stringify(queue));
+    localStorage.setItem('aromacraft_bookings', JSON.stringify(bookings));
+    localStorage.setItem('aromacraft_orders', JSON.stringify(orders));
+    localStorage.setItem('aromacraft_inventory', JSON.stringify(inventory));
+    localStorage.setItem('aromacraft_wastage', JSON.stringify(wastageLogs));
+    localStorage.setItem('aromacraft_suppliers', JSON.stringify(suppliers));
+    localStorage.setItem('aromacraft_pos', JSON.stringify(purchaseOrders));
+    localStorage.setItem('aromacraft_feedback', JSON.stringify(feedbacks));
+    localStorage.setItem('aromacraft_staff', JSON.stringify(staff));
+    localStorage.setItem('aromacraft_cms', JSON.stringify(cmsProjects));
+  }, [locations, menuItems, tables, queue, bookings, orders, inventory, wastageLogs, suppliers, purchaseOrders, feedbacks, staff, cmsProjects]);
+
+  const activeLocation = locations.find(l => l.id === activeLocationId) || locations[0];
+
+  const showToast = (title: string, message: string, type: Toast['type'] = 'info') => {
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+    setToasts(prev => [...prev, { id, title, message, type }]);
+    setTimeout(() => {
+      dismissToast(id);
+    }, 4500);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  // Cart operations
+  const addToCart = (item: MenuItem, customization?: OrderItem['customization']) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.menuItemId === item.id && JSON.stringify(i.customization) === JSON.stringify(customization));
+      if (existing) {
+        return prev.map(i => i === existing ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { menuItemId: item.id, name: item.name, price: item.price, quantity: 1, customization }];
+    });
+    showToast('Added to Order', `${item.name} added to your tray`, 'success');
+  };
+
+  const removeFromCart = (index: number) => {
+    setCart(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateCartQuantity = (index: number, delta: number) => {
+    setCart(prev => {
+      const updated = [...prev];
+      const item = updated[index];
+      if (!item) return prev;
+      const newQty = item.quantity + delta;
+      if (newQty <= 0) {
+        return updated.filter((_, i) => i !== index);
+      }
+      updated[index] = { ...item, quantity: newQty };
+      return updated;
+    });
+  };
+
+  const clearCart = () => setCart([]);
+
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // Table Management
+  const updateTableStatus = (tableId: string, status: Table['status'], partyName?: string, partySize?: number) => {
+    setTables(prev => prev.map(tbl => {
+      if (tbl.id === tableId) {
+        return {
+          ...tbl,
+          status,
+          seatedPartyName: status === 'available' || status === 'cleaning' ? undefined : (partyName || tbl.seatedPartyName),
+          partySize: status === 'available' || status === 'cleaning' ? undefined : (partySize || tbl.partySize),
+          seatedAt: status === 'occupied' ? (tbl.seatedAt || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : undefined,
+          currentOrderId: status === 'available' ? undefined : tbl.currentOrderId
+        };
+      }
+      return tbl;
+    }));
+    showToast('Floor Updated', `Table status updated to ${status.toUpperCase()}`, 'info');
+  };
+
+  const seatQueueTicketAtTable = (ticketId: string, tableId: string) => {
+    const ticket = queue.find(q => q.id === ticketId);
+    if (!ticket) return;
+
+    updateTableStatus(tableId, 'occupied', ticket.customerName, ticket.partySize);
+    setQueue(prev => prev.map(q => q.id === ticketId ? { ...q, status: 'seated' } : q));
+    showToast('Party Seated', `${ticket.customerName} assigned to table`, 'success');
+  };
+
+  // Queue
+  const joinQueue = (name: string, phone: string, partySize: number, dietary: 'all' | 'veg' | 'vegan' | 'jain', notes?: string) => {
+    const nextNum = 'Q-' + String(queue.length + 1).padStart(3, '0');
+    const newTicket: QueueTicket = {
+      id: 'q-' + Date.now(),
+      locationId: activeLocationId,
+      ticketNumber: nextNum,
+      customerName: name,
+      phone,
+      partySize,
+      dietaryPreference: dietary,
+      status: 'waiting',
+      joinedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      estimatedWaitMins: Math.max(5, (queue.filter(q => q.locationId === activeLocationId && q.status === 'waiting').length + 1) * 7),
+      notes,
+    };
+    setQueue(prev => [...prev, newTicket]);
+    showToast('Virtual Queue Ticket Generated', `Ticket #${nextNum} created! Check your phone for updates.`, 'success');
+    return newTicket;
+  };
+
+  const updateQueueStatus = (ticketId: string, status: QueueTicket['status']) => {
+    setQueue(prev => prev.map(q => q.id === ticketId ? { ...q, status } : q));
+    showToast('Queue Updated', `Ticket status set to ${status}`, 'info');
+  };
+
+  // Bookings
+  const createBooking = (bookingData: Omit<Booking, 'id' | 'bookingRef' | 'createdAt' | 'status'>) => {
+    const newRef = 'BK-' + Math.floor(1000 + Math.random() * 9000);
+    const newBooking: Booking = {
+      ...bookingData,
+      id: 'bk-' + Date.now(),
+      bookingRef: newRef,
+      status: 'confirmed',
+      createdAt: new Date().toISOString(),
+    };
+    setBookings(prev => [newBooking, ...prev]);
+    showToast('Reservation Confirmed', `Booking ${newRef} reserved successfully!`, 'success');
+    return newBooking;
+  };
+
+  const cancelBooking = (id: string) => {
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+    showToast('Booking Cancelled', 'The reservation was cancelled', 'warning');
+  };
+
+  // Orders & KDS
+  const placeOrder = (type: Order['type'], tableNumber?: string, customerName?: string, customerPhone?: string, specialNotes?: string) => {
+    if (cart.length === 0) throw new Error('Cart is empty');
+
+    const sub = cartTotal;
+    const tax = +(sub * 0.05).toFixed(2);
+    const svc = +(sub * 0.05).toFixed(2);
+    const orderNum = 'ORD-' + Math.floor(5400 + Math.random() * 1000);
+
+    const newOrder: Order = {
+      id: 'ord-' + Date.now(),
+      orderNumber: orderNum,
+      locationId: activeLocationId,
+      tableNumber,
+      type,
+      items: [...cart],
+      status: 'new',
+      customerName: customerName || (tableNumber ? `Guest at Table ${tableNumber}` : 'Customer'),
+      customerPhone,
+      specialInstructions: specialNotes,
+      subtotal: sub,
+      tax,
+      serviceCharge: svc,
+      discount: 0,
+      total: +(sub + tax + svc).toFixed(2),
+      paymentStatus: 'pending',
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+    clearCart();
+
+    // If dining in at a table, attach order to table
+    if (tableNumber) {
+      const tbl = tables.find(t => t.tableNumber === tableNumber && t.locationId === activeLocationId);
+      if (tbl) {
+        updateTableStatus(tbl.id, 'occupied', newOrder.customerName);
+      }
+    }
+
+    showToast('Order Placed!', `Order #${orderNum} dispatched to the kitchen`, 'success');
+    return newOrder;
+  };
+
+  const updateOrderStatus = (orderId: string, status: Order['status']) => {
+    setOrders(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return {
+          ...ord,
+          status,
+          prepStartedAt: status === 'in_prep' && !ord.prepStartedAt ? now : ord.prepStartedAt,
+          readyAt: status === 'ready' && !ord.readyAt ? now : ord.readyAt
+        };
+      }
+      return ord;
+    }));
+    showToast('Kitchen Status Updated', `Order ${status.toUpperCase().replace('_', ' ')}`, 'info');
+  };
+
+  const processPayment = (orderId: string, method: Order['paymentMethod'] = 'UPI / Card', discount = 0) => {
+    setOrders(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const finalTot = Math.max(0, +(ord.total - discount).toFixed(2));
+        return {
+          ...ord,
+          discount,
+          total: finalTot,
+          paymentMethod: method,
+          paymentStatus: 'paid',
+          status: 'completed'
+        };
+      }
+      return ord;
+    }));
+
+    // Update location revenue
+    const ord = orders.find(o => o.id === orderId);
+    if (ord) {
+      setLocations(prev => prev.map(loc => {
+        if (loc.id === ord.locationId) {
+          return { ...loc, todayRevenue: +(loc.todayRevenue + ord.total).toFixed(2) };
+        }
+        return loc;
+      }));
+    }
+
+    showToast('Payment Settled', `Invoice paid via ${method}`, 'success');
+  };
+
+  // Kitchen Inventory & Wastage
+  const logWastage = (itemId: string, quantity: number, reason: WastageLog['reason'], loggedBy: string, notes?: string) => {
+    const item = inventory.find(i => i.id === itemId);
+    if (!item) return;
+
+    const costImpact = +(quantity * item.unitCost).toFixed(2);
+    const newLog: WastageLog = {
+      id: 'wst-' + Date.now(),
+      locationId: activeLocationId,
+      inventoryItemId: itemId,
+      itemName: item.name,
+      quantity,
+      unit: item.unit,
+      reason,
+      costImpact,
+      loggedBy,
+      loggedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      notes,
+    };
+
+    setWastageLogs(prev => [newLog, ...prev]);
+
+    // Deduct stock from inventory
+    setInventory(prev => prev.map(inv => {
+      if (inv.id === itemId) {
+        return { ...inv, currentStock: Math.max(0, +(inv.currentStock - quantity).toFixed(1)) };
+      }
+      return inv;
+    }));
+
+    showToast('Wastage Recorded', `Logged ${quantity} ${item.unit} loss ($${costImpact})`, 'warning');
+  };
+
+  const restockInventory = (itemId: string, quantity: number) => {
+    setInventory(prev => prev.map(inv => {
+      if (inv.id === itemId) {
+        return {
+          ...inv,
+          currentStock: +(inv.currentStock + quantity).toFixed(1),
+          lastRestocked: new Date().toISOString().split('T')[0]
+        };
+      }
+      return inv;
+    }));
+    showToast('Inventory Restocked', `Added ${quantity} units to inventory`, 'success');
+  };
+
+  // Suppliers & POs
+  const createPurchaseOrder = (supplierId: string, items: { itemName: string; quantity: number; unit: string; unitPrice: number }[], deliveryDate: string) => {
+    const sup = suppliers.find(s => s.id === supplierId);
+    const poNum = 'PO-2026-' + String(purchaseOrders.length + 91).padStart(3, '0');
+    const itemsCalculated = items.map(i => ({ ...i, total: +(i.quantity * i.unitPrice).toFixed(2) }));
+    const totalAmount = +itemsCalculated.reduce((sum, i) => sum + i.total, 0).toFixed(2);
+
+    const newPO: PurchaseOrder = {
+      id: 'po-' + Date.now(),
+      poNumber: poNum,
+      locationId: activeLocationId,
+      supplierId,
+      supplierName: sup ? sup.name : 'Vendor',
+      items: itemsCalculated,
+      totalAmount,
+      status: 'ordered',
+      orderDate: new Date().toISOString().split('T')[0],
+      expectedDelivery: deliveryDate,
+    };
+
+    setPurchaseOrders(prev => [newPO, ...prev]);
+    showToast('Purchase Order Sent', `${poNum} sent to ${newPO.supplierName}`, 'success');
+    return newPO;
+  };
+
+  const updatePOStatus = (poId: string, status: PurchaseOrder['status']) => {
+    setPurchaseOrders(prev => prev.map(po => po.id === poId ? { ...po, status } : po));
+    showToast('Purchase Order Updated', `PO status changed to ${status.toUpperCase()}`, 'info');
+  };
+
+  // Feedback
+  const submitFeedback = (fbData: Omit<Feedback, 'id' | 'date' | 'verifiedVisit'>) => {
+    const newFeedback: Feedback = {
+      ...fbData,
+      id: 'fb-' + Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      verifiedVisit: true,
+    };
+    setFeedbacks(prev => [newFeedback, ...prev]);
+    showToast('Thank You!', 'Your review and dietary feedback helps us improve', 'success');
+  };
+
+  // Staff & Attendance
+  const toggleClockIn = (staffId: string) => {
+    setStaff(prev => prev.map(s => {
+      if (s.id === staffId) {
+        const nextState = !s.isClockedIn;
+        return {
+          ...s,
+          isClockedIn: nextState,
+          clockInTime: nextState ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined
+        };
+      }
+      return s;
+    }));
+    showToast('Attendance Logged', 'Staff clock status updated', 'info');
+  };
+
+  // CMS Projects
+  const addCMSProject = (projectData: Omit<CMSProject, 'id'>) => {
+    const newProj: CMSProject = {
+      ...projectData,
+      id: 'cms-' + Date.now(),
+    };
+    setCmsProjects(prev => [newProj, ...prev]);
+    showToast('CMS Project Published', `"${newProj.title}" is now live!`, 'success');
+  };
+
+  const updateCMSProject = (id: string, updates: Partial<CMSProject>) => {
+    setCmsProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    showToast('CMS Updated', 'Project modifications saved', 'success');
+  };
+
+  const deleteCMSProject = (id: string) => {
+    setCmsProjects(prev => prev.filter(p => p.id !== id));
+    showToast('CMS Project Removed', 'Project deleted from content manager', 'info');
+  };
+
+  const resetToDemoData = () => {
+    localStorage.clear();
+    setLocations(initialLocations);
+    setMenuItems(initialMenuItems);
+    setTables(initialTables);
+    setQueue(initialQueue);
+    setBookings(initialBookings);
+    setOrders(initialOrders);
+    setInventory(initialInventory);
+    setWastageLogs(initialWastageLogs);
+    setSuppliers(initialSuppliers);
+    setPurchaseOrders(initialPurchaseOrders);
+    setFeedbacks(initialFeedback);
+    setStaff(initialHRStaff);
+    setCmsProjects(initialCMSProjects);
+    showToast('Reset Complete', 'Enterprise demo dataset restored to factory defaults', 'info');
+  };
+
+  return (
+    <AppContext.Provider
+      value={{
+        currentRole,
+        setCurrentRole,
+        activeLocationId,
+        setActiveLocationId,
+        activeLocation,
+        locations,
+        toasts,
+        showToast,
+        dismissToast,
+        menuItems,
+        cart,
+        addToCart,
+        removeFromCart,
+        updateCartQuantity,
+        clearCart,
+        cartTotal,
+        dietaryFilter,
+        setDietaryFilter,
+        tables,
+        updateTableStatus,
+        seatQueueTicketAtTable,
+        queue,
+        joinQueue,
+        updateQueueStatus,
+        bookings,
+        createBooking,
+        cancelBooking,
+        orders,
+        placeOrder,
+        updateOrderStatus,
+        processPayment,
+        inventory,
+        wastageLogs,
+        logWastage,
+        restockInventory,
+        suppliers,
+        purchaseOrders,
+        createPurchaseOrder,
+        updatePOStatus,
+        feedbacks,
+        submitFeedback,
+        staff,
+        toggleClockIn,
+        cmsProjects,
+        addCMSProject,
+        updateCMSProject,
+        deleteCMSProject,
+        resetToDemoData,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useApp must be used within an AppProvider');
+  }
+  return context;
+};
