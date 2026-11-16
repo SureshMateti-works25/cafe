@@ -31,7 +31,21 @@ A mobile-friendly, full-featured enterprise web application for single and multi
 
 ---
 
-### 3. 🍽️ Interactive Table Management & Dynamic Floor Plan
+### 3. 📖 Central Menu & Multi-Branch Catalog Management
+- **Centralized Master Menu**: Manage all culinary recipes and drink formulations from the central HQ terminal.
+- **Per-Branch Menu Allocation**:
+  - Select which branches offer each dish (`Downtown Flagship`, `Uptown Bistro`, `Westside Terrace`, or `All Locations`).
+  - **1-Click Branch Toggles**: Instantly enable or disable any dish at a specific branch without code redeployment.
+- **Full Menu CRUD Operations**:
+  - **Add Menu Item**: Name, standard or custom categories, price in Indian Rupees (₹), detailed tasting notes, calorie count, preparation time (mins), ingredients list, and dish image URL with preset photography.
+  - **Edit Recipe**: Update selling prices, dietary tags, preparation times, or ingredients anytime.
+  - **Delete Recipe**: Permanently remove from the chain catalog or detach from a single branch.
+- **Dietary Protocol Certifications**: Full tagging for Strict Jain 🕊️ (zero root veggies/onion/garlic), 100% Vegan 🌿, Pure Veg 🥗, and Gluten-Free.
+- **Global Stock Toggles**: Toggle dishes between `In Stock` and `Out of Stock` in real-time.
+
+---
+
+### 4. 🍽️ Interactive Table Management & Dynamic Floor Plan
 - **Real-Time Visual Floor Plan**: Filter by preconfigured or custom sections (`Main Hall`, `Window Lounge`, `Outdoor Terrace`, `Private Roastery Room`, or user-added zones).
 - **Dynamic Section Management**: Add new custom floor sections (e.g. `Rooftop Terrace`, `VIP Cabana`, `Courtyard Garden`) and delete empty sections with a single click.
 - **Full Table CRUD Operations**:
