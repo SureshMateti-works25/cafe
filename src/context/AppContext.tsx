@@ -54,8 +54,12 @@ interface AppContextType {
   showToast: (title: string, message: string, type?: Toast['type']) => void;
   dismissToast: (id: string) => void;
 
-  // Menu & Cart
+  // Menu & Catalog Management
   menuItems: MenuItem[];
+  addMenuItem: (itemData: Omit<MenuItem, 'id'>) => void;
+  updateMenuItem: (id: string, updates: Partial<MenuItem>) => void;
+  deleteMenuItem: (id: string) => void;
+  toggleItemLocationAvailability: (itemId: string, locationId: string) => void;
   cart: OrderItem[];
   addToCart: (item: MenuItem, customization?: OrderItem['customization']) => void;
   removeFromCart: (index: number) => void;
@@ -148,7 +152,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [activeLocationId, setActiveLocationId] = useState<string>('loc-1');
   const [locations, setLocations] = useState<Location[]>(() => loadStored('locations', initialLocations));
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => loadStored('menu', initialMenuItems));
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
+    const loaded = loadStored<MenuItem[]>('menu', initialMenuItems);
+    return loaded.map(item => ({
+      ...item,
+      availableLocationIds: item.availableLocationIds && item.availableLocationIds.length > 0
+        ? item.availableLocationIds
+        : ['loc-1', 'loc-2', 'loc-3']
+    }));
+  });
   const [tables, setTables] = useState<Table[]>(() => loadStored('tables', initialTables));
   const [customSections, setCustomSections] = useState<string[]>(() => loadStored('custom_sections', defaultSections));
   const [queue, setQueue] = useState<QueueTicket[]>(() => loadStored('queue', initialQueue));
@@ -231,6 +243,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const clearCart = () => setCart([]);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // Central Menu Management Operations (Add, Edit, Delete, Location Availability)
+  const addMenuItem = (itemData: Omit<MenuItem, 'id'>) => {
+    const newItem: MenuItem = {
+      ...itemData,
+      id: 'menu-' + Date.now(),
+      availableLocationIds: itemData.availableLocationIds && itemData.availableLocationIds.length > 0
+        ? itemData.availableLocationIds
+        : locations.map(l => l.id),
+      dietary: itemData.dietary || ['veg'],
+      ingredients: itemData.ingredients || [],
+      isAvailable: itemData.isAvailable !== undefined ? itemData.isAvailable : true,
+    };
+    setMenuItems(prev => [newItem, ...prev]);
+    showToast('Menu Item Created', `${newItem.name} added to central catalog`, 'success');
+  };
+
+  const updateMenuItem = (id: string, updates: Partial<MenuItem>) => {
+    setMenuItems(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    showToast('Menu Item Updated', 'Changes saved to menu catalog', 'success');
+  };
+
+  const deleteMenuItem = (id: string) => {
+    const item = menuItems.find(m => m.id === id);
+    setMenuItems(prev => prev.filter(m => m.id !== id));
+    showToast('Menu Item Removed', `${item?.name || 'Item'} deleted from catalog`, 'info');
+  };
+
+  const toggleItemLocationAvailability = (itemId: string, locationId: string) => {
+    setMenuItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const currentLocs = item.availableLocationIds || locations.map(l => l.id);
+        const isCurrentlyAvailable = currentLocs.includes(locationId);
+        const newLocs = isCurrentlyAvailable 
+          ? currentLocs.filter(id => id !== locationId)
+          : [...currentLocs, locationId];
+        
+        const targetLoc = locations.find(l => l.id === locationId);
+        showToast(
+          isCurrentlyAvailable ? 'Disabled for Branch' : 'Enabled for Branch',
+          `"${item.name}" is now ${isCurrentlyAvailable ? 'hidden at' : 'available at'} ${targetLoc?.name || 'selected branch'}`,
+          isCurrentlyAvailable ? 'warning' : 'success'
+        );
+        return {
+          ...item,
+          availableLocationIds: newLocs
+        };
+      }
+      return item;
+    }));
+  };
 
   // Table Management (Status, Seating, Add, Edit, Remove, Sections)
   const updateTableStatus = (tableId: string, status: Table['status'], partyName?: string, partySize?: number) => {
@@ -641,6 +704,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         showToast,
         dismissToast,
         menuItems,
+        addMenuItem,
+        updateMenuItem,
+        deleteMenuItem,
+        toggleItemLocationAvailability,
         cart,
         addToCart,
         removeFromCart,

@@ -15,9 +15,11 @@ import {
   X,
   Building2,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  UtensilsCrossed
 } from 'lucide-react';
 import { CentralDashboard } from './CentralDashboard';
+import { CentralMenuManager } from './CentralMenuManager';
 import { TableManagement } from './TableManagement';
 import { KitchenDisplay } from './KitchenDisplay';
 import { InventoryWastage } from './InventoryWastage';
@@ -38,9 +40,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToCustomer }) 
 
   // RBAC Permission Map
   const rolePermissions: Record<string, string[]> = {
-    admin_hq: ['dashboard', 'tables', 'kds', 'inventory', 'vendors', 'billing', 'reports', 'cms'],
-    store_manager: ['dashboard', 'tables', 'kds', 'inventory', 'billing', 'cms'],
-    kitchen_chef: ['kds', 'inventory'],
+    admin_hq: ['dashboard', 'menu', 'tables', 'kds', 'inventory', 'vendors', 'billing', 'reports', 'cms'],
+    store_manager: ['dashboard', 'menu', 'tables', 'kds', 'inventory', 'billing', 'cms'],
+    kitchen_chef: ['kds', 'inventory', 'menu'],
     cashier: ['billing', 'tables'],
     inventory_mgr: ['inventory', 'vendors'],
     finance_hr: ['reports', 'billing', 'dashboard'],
@@ -52,8 +54,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToCustomer }) 
   // If current tab is not allowed for the role, auto-redirect to first allowed tab
   const currentAllowedTab = allowedTabs.includes(activeTab) ? activeTab : allowedTabs[0];
 
-  const menuItems = [
+  const navMenuItems = [
     { key: 'dashboard', label: 'Central Dashboard', icon: LayoutDashboard, badge: 'HQ' },
+    { key: 'menu', label: 'Menu & Recipes', icon: UtensilsCrossed, badge: 'Catalog' },
     { key: 'tables', label: 'Table Management', icon: TableProperties, badge: 'Floor' },
     { key: 'kds', label: 'Kitchen KDS', icon: ChefHat, badge: 'Kitchen' },
     { key: 'inventory', label: 'Inventory & Wastage', icon: Package, badge: 'Stock' },
@@ -67,6 +70,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToCustomer }) 
     switch (currentAllowedTab) {
       case 'dashboard':
         return <CentralDashboard onNavigateTab={setActiveTab} />;
+      case 'menu':
+        return <CentralMenuManager />;
       case 'tables':
         return <TableManagement onNavigateTab={setActiveTab} />;
       case 'kds':
@@ -158,7 +163,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToCustomer }) 
             <span className="text-[10px] font-mono uppercase tracking-wider text-cafe-500 block px-3 mb-1">
               Modules & Terminals
             </span>
-            {menuItems.map(item => {
+            {navMenuItems.map(item => {
               const Icon = item.icon;
               const isAllowed = allowedTabs.includes(item.key);
               const isActive = currentAllowedTab === item.key;

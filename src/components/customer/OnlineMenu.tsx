@@ -19,7 +19,7 @@ interface OnlineMenuProps {
 }
 
 export const OnlineMenu: React.FC<OnlineMenuProps> = ({ onOpenCart }) => {
-  const { menuItems, addToCart, dietaryFilter, setDietaryFilter, cart } = useApp();
+  const { menuItems, addToCart, dietaryFilter, setDietaryFilter, cart, activeLocation } = useApp();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -35,6 +35,13 @@ export const OnlineMenu: React.FC<OnlineMenuProps> = ({ onOpenCart }) => {
 
   // Filter logic
   const filteredItems = menuItems.filter(item => {
+    // Location check: dish must be offered at active branch
+    if (item.availableLocationIds && item.availableLocationIds.length > 0) {
+      if (!item.availableLocationIds.includes(activeLocation.id) && !item.availableLocationIds.includes('all')) {
+        return false;
+      }
+    }
+
     // Category check
     if (selectedCategory !== 'All' && item.category !== selectedCategory) return false;
 

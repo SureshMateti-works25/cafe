@@ -28,7 +28,7 @@ export interface Location {
 export interface MenuItem {
   id: string;
   name: string;
-  category: 'Espresso & Brews' | 'Artisan Teas' | 'Bakery & Pastry' | 'Gourmet Mains' | 'Healthy Bowls' | 'Desserts';
+  category: 'Espresso & Brews' | 'Artisan Teas' | 'Bakery & Pastry' | 'Gourmet Mains' | 'Healthy Bowls' | 'Desserts' | string;
   description: string;
   price: number;
   dietary: DietaryType[];
@@ -39,6 +39,7 @@ export interface MenuItem {
   prepTimeMins: number;
   image: string;
   isAvailable: boolean;
+  availableLocationIds?: string[];
   ingredients: string[];
   featured?: boolean;
 }

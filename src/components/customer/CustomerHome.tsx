@@ -22,7 +22,9 @@ interface CustomerHomeProps {
 export const CustomerHome: React.FC<CustomerHomeProps> = ({ onNavigateTab, onOpenFeedback }) => {
   const { activeLocation, menuItems, cmsProjects, feedbacks, queue, addToCart } = useApp();
 
-  const featuredItems = menuItems.filter(m => m.featured).slice(0, 4);
+  const featuredItems = menuItems
+    .filter(m => m.featured && (!m.availableLocationIds || m.availableLocationIds.includes(activeLocation.id) || m.availableLocationIds.includes('all')))
+    .slice(0, 4);
   const publishedProjects = cmsProjects.filter(p => p.status === 'published');
   const recentReviews = feedbacks.slice(0, 3);
 

@@ -20,7 +20,7 @@ interface CentralDashboardProps {
 }
 
 export const CentralDashboard: React.FC<CentralDashboardProps> = ({ onNavigateTab }) => {
-  const { locations, tables, queue, inventory, wastageLogs, orders, cmsProjects } = useApp();
+  const { locations, tables, queue, inventory, wastageLogs, orders, cmsProjects, menuItems } = useApp();
 
   // Aggregate stats across all locations
   const totalRevenue = locations.reduce((sum, l) => sum + l.todayRevenue, 0);
@@ -51,8 +51,14 @@ export const CentralDashboard: React.FC<CentralDashboardProps> = ({ onNavigateTa
         {/* Quick HQ CTA */}
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => onNavigateTab('cms')}
+            onClick={() => onNavigateTab('menu')}
             className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-cafe-950 font-bold text-xs transition shadow-sm"
+          >
+            + Manage Menu Catalog ({menuItems.length})
+          </button>
+          <button
+            onClick={() => onNavigateTab('cms')}
+            className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition"
           >
             + New CMS Promotion
           </button>
