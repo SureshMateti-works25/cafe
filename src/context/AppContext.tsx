@@ -165,7 +165,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const loaded = loadStored<Table[]>('tables', initialTables);
     return loaded.map(tbl => ({
       ...tbl,
-      cctvCameraId: tbl.cctvCameraId || `CAM-${tbl.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`,
+      cctvCameraId: tbl.cctvCameraId || (tbl.tableNumber === 'T-01' ? 'CAM-FL-01 (192.168.68.113)' : `CAM-${tbl.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`),
+      cctvStreamUrl: tbl.cctvStreamUrl || (tbl.tableNumber === 'T-01' ? 'rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=1&subtype=0' : undefined),
       cctvStatus: tbl.cctvStatus || 'recording',
       cctvResolution: tbl.cctvResolution || '1080p 30fps'
     }));

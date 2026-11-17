@@ -18,7 +18,10 @@ import {
   AlertCircle,
   Zap,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  ExternalLink,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -35,8 +38,8 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
   const [isNightVision, setIsNightVision] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [streamHealth, setStreamHealth] = useState<'optimal' | 'buffering'>('optimal');
   const [videoError, setVideoError] = useState(false);
+  const [copiedBridgeCmd, setCopiedBridgeCmd] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -52,7 +55,14 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
     'T-09': 'https://assets.mixkit.co/videos/preview/mixkit-people-having-a-conversation-in-a-coffee-shop-43253-large.mp4',
   };
 
-  const streamUrl = table.cctvStreamUrl || defaultFeeds[table.tableNumber] || 'https://assets.mixkit.co/videos/preview/mixkit-coffee-shop-interior-with-people-enjoying-their-beverages-43254-large.mp4';
+  const rawStreamUrl = table.cctvStreamUrl;
+  const isDirectRtsp = rawStreamUrl && rawStreamUrl.startsWith('rtsp://');
+
+  // If direct RTSP, check if local go2rtc/webrtc bridge is broadcasting, or fallback to simulated/demo stream
+  const activeVideoSrc = isDirectRtsp 
+    ? `http://localhost:1984/api/stream.mp4?src=${encodeURIComponent(rawStreamUrl)}`
+    : (rawStreamUrl || defaultFeeds[table.tableNumber] || defaultFeeds['T-01']);
+
   const cameraId = table.cctvCameraId || `CAM-${table.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`;
 
   // Live timestamp clock ticker
@@ -96,18 +106,27 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
     }
   };
 
+  const handleCopyGo2Rtc = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const cmd = `docker run -d --name go2rtc -p 1984:1984 -p 8554:8554 alexxit/go2rtc`;
+    navigator.clipboard.writeText(cmd);
+    setCopiedBridgeCmd(true);
+    showToast('Copied to Clipboard', 'Run this command in terminal to bridge RTSP to WebRTC', 'info');
+    setTimeout(() => setCopiedBridgeCmd(false), 3000);
+  };
+
   return (
     <div 
       ref={containerRef}
       className={`relative overflow-hidden bg-black text-white font-mono rounded-2xl select-none group border border-cafe-800 shadow-lg ${
-        compact ? 'h-40' : 'h-64 sm:h-80 w-full'
+        compact ? 'h-40' : 'h-64 sm:h-84 w-full'
       }`}
     >
-      {/* Real HTML5 Live Video Stream with Fallback */}
+      {/* Video Player or Direct RTSP Bridge / Radar */}
       {!videoError ? (
         <video
           ref={videoRef}
-          src={streamUrl}
+          src={activeVideoSrc}
           autoPlay
           loop
           muted={isMuted}
@@ -123,35 +142,64 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
           className="w-full h-full object-cover"
         />
       ) : (
-        /* Dynamic SVG Surveillance Canvas Fallback */
+        /* Real-Time Surveillance Console with Radar & RTSP Telemetry */
         <div 
           style={{
             filter: isNightVision 
               ? 'grayscale(1) contrast(1.7) brightness(1.2) sepia(0.3) hue-rotate(80deg)' 
               : 'none'
           }}
-          className="w-full h-full bg-gradient-to-br from-slate-900 via-zinc-900 to-black flex flex-col items-center justify-center p-4 relative"
+          className="w-full h-full bg-gradient-to-br from-zinc-950 via-slate-950 to-black flex flex-col items-center justify-center p-4 relative"
         >
-          {/* Subtle Scanning Radar effect */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.08)_0,transparent_70%)] animate-pulse" />
+          {/* Scanning Radar effect */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.07)_0,transparent_70%)] animate-pulse" />
           
-          <div className="relative z-10 text-center space-y-2">
-            <div className="w-12 h-12 rounded-full border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-400">
-              <Camera className="w-6 h-6 animate-pulse" />
+          <div className="relative z-10 text-center space-y-2 max-w-sm">
+            <div className="w-11 h-11 rounded-full border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-400 shadow-sm">
+              <Camera className="w-5 h-5 animate-pulse" />
             </div>
+
             <div>
-              <span className="text-xs font-bold text-emerald-400 tracking-wider block">
-                TABLE {table.tableNumber} LIVE RADAR
-              </span>
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-bold text-emerald-400 tracking-wider">
+                  {isDirectRtsp ? 'RTSP LIVE STREAM CONFIGURED' : `TABLE ${table.tableNumber} LIVE SURVEILLANCE`}
+                </span>
+              </div>
               <span className="text-[10px] text-zinc-400 block mt-0.5">
                 {table.section} • {table.capacity} Seats ({table.status.toUpperCase()})
               </span>
             </div>
-            {table.seatedPartyName && (
-              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Seated: {table.seatedPartyName} ({table.partySize} guests)
+
+            {isDirectRtsp ? (
+              <div className="p-2.5 bg-black/80 rounded-xl border border-emerald-500/30 text-left text-[10px] space-y-1">
+                <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-400">Endpoint:</span>
+                  <span className="font-bold text-amber-300 truncate max-w-[170px]">{rawStreamUrl}</span>
+                </div>
+                <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-400">Protocol:</span>
+                  <span className="text-emerald-400 font-bold">RTSP / H.264 (Port 554)</span>
+                </div>
+                {!compact && (
+                  <div className="pt-1.5 border-t border-zinc-800 flex items-center justify-between">
+                    <span className="text-[9px] text-zinc-400">Browser WebRTC Bridge:</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyGo2Rtc}
+                      className="px-2 py-0.5 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-bold text-[9px] flex items-center gap-1"
+                    >
+                      {copiedBridgeCmd ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+                      <span>Copy go2rtc cmd</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : table.seatedPartyName ? (
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                👤 Seated: {table.seatedPartyName} ({table.partySize} guests)
               </span>
-            )}
+            ) : null}
           </div>
         </div>
       )}
@@ -160,12 +208,12 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-40" />
 
       {/* Camera Reticle / Crosshair */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-        <div className="w-16 h-16 border border-emerald-400/40 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-25">
+        <div className="w-14 h-14 border border-emerald-400/40 rounded-full flex items-center justify-center">
+          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping" />
         </div>
-        <div className="absolute w-24 h-px bg-emerald-400/30" />
-        <div className="absolute h-24 w-px bg-emerald-400/30" />
+        <div className="absolute w-20 h-px bg-emerald-400/30" />
+        <div className="absolute h-20 w-px bg-emerald-400/30" />
       </div>
 
       {/* TOP HUD: Camera ID, Table Number, REC indicator, Time */}
