@@ -1,0 +1,10 @@
+streams:
+  table1: rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=1&subtype=0
+  table1_sub: rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=1&subtype=1
+
+api:
+  listen: ":1984"
+  origin: "*"
+
+webrtc:
+  listen: ":8555"

@@ -58,10 +58,24 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
   const rawStreamUrl = table.cctvStreamUrl;
   const isDirectRtsp = rawStreamUrl && rawStreamUrl.startsWith('rtsp://');
 
-  // If direct RTSP, check if local go2rtc/webrtc bridge is broadcasting, or fallback to simulated/demo stream
-  const activeVideoSrc = isDirectRtsp 
-    ? `http://localhost:1984/api/stream.mp4?src=${encodeURIComponent(rawStreamUrl)}`
-    : (rawStreamUrl || defaultFeeds[table.tableNumber] || defaultFeeds['T-01']);
+  // Check if we can route to go2rtc WebRTC stream
+  let activeVideoSrc = rawStreamUrl || defaultFeeds[table.tableNumber] || defaultFeeds['T-01'];
+  let isWebRtcIframe = false;
+
+  if (isDirectRtsp) {
+    if (table.tableNumber === 'T-01') {
+      activeVideoSrc = 'http://localhost:1984/stream.html?src=table1&mode=webrtc';
+      isWebRtcIframe = true;
+    } else if (table.tableNumber === 'T-02') {
+      activeVideoSrc = 'http://localhost:1984/stream.html?src=table1_sub&mode=webrtc';
+      isWebRtcIframe = true;
+    } else {
+      activeVideoSrc = `http://localhost:1984/stream.html?src=table1&mode=webrtc`;
+      isWebRtcIframe = true;
+    }
+  } else if (activeVideoSrc && activeVideoSrc.includes('/stream.html?')) {
+    isWebRtcIframe = true;
+  }
 
   const cameraId = table.cctvCameraId || `CAM-${table.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`;
 
@@ -122,8 +136,22 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
         compact ? 'h-40' : 'h-64 sm:h-84 w-full'
       }`}
     >
-      {/* Video Player or Direct RTSP Bridge / Radar */}
-      {!videoError ? (
+      {/* Live WebRTC Stream Iframe or HTML5 Video Stream */}
+      {isWebRtcIframe ? (
+        <iframe
+          src={activeVideoSrc}
+          className="w-full h-full border-0 object-cover pointer-events-auto"
+          allow="autoplay; fullscreen; camera"
+          title={`CCTV ${table.tableNumber}`}
+          style={{
+            transform: `scale(${zoomLevel})`,
+            transition: 'transform 0.3s ease, filter 0.3s ease',
+            filter: isNightVision 
+              ? 'grayscale(1) contrast(1.7) brightness(1.2) sepia(0.3) hue-rotate(80deg)' 
+              : 'none'
+          }}
+        />
+      ) : !videoError ? (
         <video
           ref={videoRef}
           src={activeVideoSrc}
