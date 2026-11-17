@@ -21,7 +21,8 @@ import {
   ZoomOut,
   ExternalLink,
   Copy,
-  Check
+  Check,
+  Globe
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -58,21 +59,32 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
   const rawStreamUrl = table.cctvStreamUrl;
   const isDirectRtsp = rawStreamUrl && rawStreamUrl.startsWith('rtsp://');
 
+  const [streamSource, setStreamSource] = useState<'auto' | 'public' | 'lan' | 'local'>('auto');
+
+  // Detect whether we are running on HTTPS, remote domain, or localhost
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isRemote = typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname);
+  
+  let selectedHost = 'https://cam.nistta.com';
+  if (streamSource === 'public') {
+    selectedHost = 'https://cam.nistta.com';
+  } else if (streamSource === 'lan') {
+    selectedHost = 'http://192.168.68.105:1984';
+  } else if (streamSource === 'local') {
+    selectedHost = 'http://localhost:1984';
+  } else {
+    // auto: if on remote/HTTPS use public tunnel, else local
+    selectedHost = (isHttps || isRemote) ? 'https://cam.nistta.com' : 'http://localhost:1984';
+  }
+
   // Check if we can route to go2rtc WebRTC stream
   let activeVideoSrc = rawStreamUrl || defaultFeeds[table.tableNumber] || defaultFeeds['T-01'];
   let isWebRtcIframe = false;
 
   if (isDirectRtsp) {
-    if (table.tableNumber === 'T-01') {
-      activeVideoSrc = 'http://localhost:1984/stream.html?src=table1&mode=webrtc';
-      isWebRtcIframe = true;
-    } else if (table.tableNumber === 'T-02') {
-      activeVideoSrc = 'http://localhost:1984/stream.html?src=table1_sub&mode=webrtc';
-      isWebRtcIframe = true;
-    } else {
-      activeVideoSrc = `http://localhost:1984/stream.html?src=table1&mode=webrtc`;
-      isWebRtcIframe = true;
-    }
+    const streamName = table.tableNumber === 'T-02' ? 'table1_sub' : 'table1';
+    activeVideoSrc = `${selectedHost}/stream.html?src=${streamName}&mode=webrtc`;
+    isWebRtcIframe = true;
   } else if (activeVideoSrc && activeVideoSrc.includes('/stream.html?')) {
     isWebRtcIframe = true;
   }
@@ -210,16 +222,40 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
                   <span className="text-emerald-400 font-bold">RTSP / H.264 (Port 554)</span>
                 </div>
                 {!compact && (
-                  <div className="pt-1.5 border-t border-zinc-800 flex items-center justify-between">
-                    <span className="text-[9px] text-zinc-400">Browser WebRTC Bridge:</span>
-                    <button
-                      type="button"
-                      onClick={handleCopyGo2Rtc}
-                      className="px-2 py-0.5 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-bold text-[9px] flex items-center gap-1"
-                    >
-                      {copiedBridgeCmd ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
-                      <span>Copy go2rtc cmd</span>
-                    </button>
+                  <div className="pt-1.5 border-t border-zinc-800 flex items-center justify-between gap-1">
+                    <span className="text-[9px] text-zinc-400">Stream Source:</span>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setStreamSource('public'); }}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition ${
+                          selectedHost.includes('nistta') ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                        title="Cloudflare Public Tunnel (cam.nistta.com)"
+                      >
+                        Cloudflare
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setStreamSource('lan'); }}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition ${
+                          selectedHost.includes('192.168') ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                        title="Local Cafe WiFi (192.168.68.105:1984)"
+                      >
+                        LAN
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setStreamSource('local'); }}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition ${
+                          selectedHost.includes('localhost') ? 'bg-blue-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                        title="Localhost (127.0.0.1:1984)"
+                      >
+                        Local
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -350,6 +386,18 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
+
+          {/* Open Stream in New Tab */}
+          <a
+            href={activeVideoSrc}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 text-zinc-300 hover:bg-white/15 rounded-lg transition"
+            title="Open Live Stream in New Tab"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
     </div>
