@@ -45,12 +45,17 @@ A mobile-friendly, full-featured enterprise web application for single and multi
 
 ---
 
-### 4. 🍽️ Interactive Table Management & Dynamic Floor Plan
+### 4. 🍽️ Interactive Table Management, Dynamic Floor Plan & CCTV Surveillance
 - **Real-Time Visual Floor Plan**: Filter by preconfigured or custom sections (`Main Hall`, `Window Lounge`, `Outdoor Terrace`, `Private Roastery Room`, or user-added zones).
+- **📹 Live CCTV Table Feeds**:
+  - **Live Video Player**: Real-time HUD showing timestamp, `● REC` indicator, camera channel (`CAM-FL-01 // T-01`), 1080p resolution, and stream bitrate.
+  - **Night Vision / IR Mode**: Switch to infrared night vision contrast filter.
+  - **PTZ Digital Zoom**: Zoom 1x, 1.5x, and 2x into any table for service or occupancy verification.
+  - **Security Multi-Camera Wall**: Switch between Floor Plan View and a high-density CCTV Matrix showing all table feeds simultaneously.
 - **Dynamic Section Management**: Add new custom floor sections (e.g. `Rooftop Terrace`, `VIP Cabana`, `Courtyard Garden`) and delete empty sections with a single click.
 - **Full Table CRUD Operations**:
-  - **Add Table**: Create new tables with custom numbers (`T-11`, `R-01`), seating capacities (2–12 guests), and target sections.
-  - **Edit Table**: Modify table numbers, guest capacities, or reassign sections from the table drawer.
+  - **Add Table**: Create new tables with custom numbers (`T-11`, `R-01`), seating capacities (2–12 guests), target sections, and CCTV stream configuration.
+  - **Edit Table**: Modify table numbers, guest capacities, sections, or CCTV camera parameters from the table drawer.
   - **Delete Table**: Remove tables from the floor plan with safety confirmation dialogs.
 - **Status Badges**: `Available`, `Occupied`, `Reserved`, `Billed`, and `Cleaning`.
 - **Queue-to-Table Seating**: 1-click seating of waiting queue tickets directly onto available tables.
