@@ -57,6 +57,10 @@ export interface Table {
   seatedPartyName?: string;
   partySize?: number;
   seatedAt?: string;
+  cctvCameraId?: string;
+  cctvStreamUrl?: string;
+  cctvStatus?: 'online' | 'recording' | 'offline';
+  cctvResolution?: string;
 }
 
 export interface QueueTicket {

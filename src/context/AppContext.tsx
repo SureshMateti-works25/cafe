@@ -161,7 +161,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         : ['loc-1', 'loc-2', 'loc-3']
     }));
   });
-  const [tables, setTables] = useState<Table[]>(() => loadStored('tables', initialTables));
+  const [tables, setTables] = useState<Table[]>(() => {
+    const loaded = loadStored<Table[]>('tables', initialTables);
+    return loaded.map(tbl => ({
+      ...tbl,
+      cctvCameraId: tbl.cctvCameraId || `CAM-${tbl.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`,
+      cctvStatus: tbl.cctvStatus || 'recording',
+      cctvResolution: tbl.cctvResolution || '1080p 30fps'
+    }));
+  });
   const [customSections, setCustomSections] = useState<string[]>(() => loadStored('custom_sections', defaultSections));
   const [queue, setQueue] = useState<QueueTicket[]>(() => loadStored('queue', initialQueue));
   const [bookings, setBookings] = useState<Booking[]>(() => loadStored('bookings', initialBookings));

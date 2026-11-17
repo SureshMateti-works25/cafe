@@ -252,29 +252,29 @@ export const initialMenuItems: MenuItem[] = [
 
 export const initialTables: Table[] = [
   // Location 1 (Downtown)
-  { id: 'tbl-101', locationId: 'loc-1', tableNumber: 'T-01', capacity: 2, section: 'Window Lounge', status: 'occupied', currentOrderId: 'ord-101', seatedPartyName: 'Aarav Mehta', partySize: 2, seatedAt: '18:15' },
-  { id: 'tbl-102', locationId: 'loc-1', tableNumber: 'T-02', capacity: 2, section: 'Window Lounge', status: 'available' },
-  { id: 'tbl-103', locationId: 'loc-1', tableNumber: 'T-03', capacity: 4, section: 'Main Hall', status: 'occupied', currentOrderId: 'ord-102', seatedPartyName: 'Pooja & Friends (Jain)', partySize: 4, seatedAt: '18:30' },
-  { id: 'tbl-104', locationId: 'loc-1', tableNumber: 'T-04', capacity: 4, section: 'Main Hall', status: 'reserved', seatedPartyName: 'Corporate Dinner', partySize: 4 },
-  { id: 'tbl-105', locationId: 'loc-1', tableNumber: 'T-05', capacity: 6, section: 'Main Hall', status: 'billed', currentOrderId: 'ord-103', seatedPartyName: 'David Chen Family', partySize: 5, seatedAt: '17:45' },
-  { id: 'tbl-106', locationId: 'loc-1', tableNumber: 'T-06', capacity: 2, section: 'Main Hall', status: 'cleaning' },
-  { id: 'tbl-107', locationId: 'loc-1', tableNumber: 'T-07', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', currentOrderId: 'ord-104', seatedPartyName: 'Sophia Miller', partySize: 3, seatedAt: '18:40' },
-  { id: 'tbl-108', locationId: 'loc-1', tableNumber: 'T-08', capacity: 4, section: 'Outdoor Terrace', status: 'available' },
-  { id: 'tbl-109', locationId: 'loc-1', tableNumber: 'T-09', capacity: 8, section: 'Private Roastery Room', status: 'reserved', seatedPartyName: 'Tech Summit VIPs', partySize: 7 },
-  { id: 'tbl-110', locationId: 'loc-1', tableNumber: 'T-10', capacity: 2, section: 'Window Lounge', status: 'available' },
+  { id: 'tbl-101', locationId: 'loc-1', tableNumber: 'T-01', capacity: 2, section: 'Window Lounge', status: 'occupied', currentOrderId: 'ord-101', seatedPartyName: 'Aarav Mehta', partySize: 2, seatedAt: '18:15', cctvCameraId: 'CAM-FL-01', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-102', locationId: 'loc-1', tableNumber: 'T-02', capacity: 2, section: 'Window Lounge', status: 'available', cctvCameraId: 'CAM-FL-02', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-103', locationId: 'loc-1', tableNumber: 'T-03', capacity: 4, section: 'Main Hall', status: 'occupied', currentOrderId: 'ord-102', seatedPartyName: 'Pooja & Friends (Jain)', partySize: 4, seatedAt: '18:30', cctvCameraId: 'CAM-FL-03', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-104', locationId: 'loc-1', tableNumber: 'T-04', capacity: 4, section: 'Main Hall', status: 'reserved', seatedPartyName: 'Corporate Dinner', partySize: 4, cctvCameraId: 'CAM-FL-04', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-105', locationId: 'loc-1', tableNumber: 'T-05', capacity: 6, section: 'Main Hall', status: 'billed', currentOrderId: 'ord-103', seatedPartyName: 'David Chen Family', partySize: 5, seatedAt: '17:45', cctvCameraId: 'CAM-FL-05', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-106', locationId: 'loc-1', tableNumber: 'T-06', capacity: 2, section: 'Main Hall', status: 'cleaning', cctvCameraId: 'CAM-FL-06', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-107', locationId: 'loc-1', tableNumber: 'T-07', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', currentOrderId: 'ord-104', seatedPartyName: 'Sophia Miller', partySize: 3, seatedAt: '18:40', cctvCameraId: 'CAM-FL-07', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-108', locationId: 'loc-1', tableNumber: 'T-08', capacity: 4, section: 'Outdoor Terrace', status: 'available', cctvCameraId: 'CAM-FL-08', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-109', locationId: 'loc-1', tableNumber: 'T-09', capacity: 8, section: 'Private Roastery Room', status: 'reserved', seatedPartyName: 'Tech Summit VIPs', partySize: 7, cctvCameraId: 'CAM-FL-09', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-110', locationId: 'loc-1', tableNumber: 'T-10', capacity: 2, section: 'Window Lounge', status: 'available', cctvCameraId: 'CAM-FL-10', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
 
   // Location 2 (Uptown)
-  { id: 'tbl-201', locationId: 'loc-2', tableNumber: 'U-01', capacity: 2, section: 'Main Hall', status: 'occupied', currentOrderId: 'ord-201', seatedPartyName: 'Rohan Gupta', partySize: 2, seatedAt: '18:20' },
-  { id: 'tbl-202', locationId: 'loc-2', tableNumber: 'U-02', capacity: 4, section: 'Main Hall', status: 'available' },
-  { id: 'tbl-203', locationId: 'loc-2', tableNumber: 'U-03', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', seatedPartyName: 'Ananya Roy', partySize: 3, seatedAt: '18:35' },
-  { id: 'tbl-204', locationId: 'loc-2', tableNumber: 'U-04', capacity: 6, section: 'Main Hall', status: 'reserved', seatedPartyName: 'Sharma Anniversary', partySize: 6 },
-  { id: 'tbl-205', locationId: 'loc-2', tableNumber: 'U-05', capacity: 2, section: 'Window Lounge', status: 'available' },
+  { id: 'tbl-201', locationId: 'loc-2', tableNumber: 'U-01', capacity: 2, section: 'Main Hall', status: 'occupied', currentOrderId: 'ord-201', seatedPartyName: 'Rohan Gupta', partySize: 2, seatedAt: '18:20', cctvCameraId: 'CAM-UP-01', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-202', locationId: 'loc-2', tableNumber: 'U-02', capacity: 4, section: 'Main Hall', status: 'available', cctvCameraId: 'CAM-UP-02', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-203', locationId: 'loc-2', tableNumber: 'U-03', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', seatedPartyName: 'Ananya Roy', partySize: 3, seatedAt: '18:35', cctvCameraId: 'CAM-UP-03', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-204', locationId: 'loc-2', tableNumber: 'U-04', capacity: 6, section: 'Main Hall', status: 'reserved', seatedPartyName: 'Sharma Anniversary', partySize: 6, cctvCameraId: 'CAM-UP-04', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-205', locationId: 'loc-2', tableNumber: 'U-05', capacity: 2, section: 'Window Lounge', status: 'available', cctvCameraId: 'CAM-UP-05', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
 
   // Location 3 (Westside)
-  { id: 'tbl-301', locationId: 'loc-3', tableNumber: 'W-01', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', currentOrderId: 'ord-301', seatedPartyName: 'Vikram Joshi', partySize: 4, seatedAt: '18:10' },
-  { id: 'tbl-302', locationId: 'loc-3', tableNumber: 'W-02', capacity: 2, section: 'Main Hall', status: 'available' },
-  { id: 'tbl-303', locationId: 'loc-3', tableNumber: 'W-03', capacity: 4, section: 'Main Hall', status: 'available' },
-  { id: 'tbl-304', locationId: 'loc-3', tableNumber: 'W-04', capacity: 6, section: 'Private Roastery Room', status: 'cleaning' },
+  { id: 'tbl-301', locationId: 'loc-3', tableNumber: 'W-01', capacity: 4, section: 'Outdoor Terrace', status: 'occupied', currentOrderId: 'ord-301', seatedPartyName: 'Vikram Joshi', partySize: 4, seatedAt: '18:10', cctvCameraId: 'CAM-WS-01', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-302', locationId: 'loc-3', tableNumber: 'W-02', capacity: 2, section: 'Main Hall', status: 'available', cctvCameraId: 'CAM-WS-02', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-303', locationId: 'loc-3', tableNumber: 'W-03', capacity: 4, section: 'Main Hall', status: 'available', cctvCameraId: 'CAM-WS-03', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
+  { id: 'tbl-304', locationId: 'loc-3', tableNumber: 'W-04', capacity: 6, section: 'Private Roastery Room', status: 'cleaning', cctvCameraId: 'CAM-WS-04', cctvStatus: 'recording', cctvResolution: '1080p 30fps' },
 ];
 
 export const initialQueue: QueueTicket[] = [
