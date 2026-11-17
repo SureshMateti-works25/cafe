@@ -77,13 +77,34 @@ export const CCTVPlayer: React.FC<CCTVPlayerProps> = ({ table, compact = false, 
     selectedHost = (isHttps || isRemote) ? 'https://cam.nistta.com' : 'http://localhost:1984';
   }
 
+  // Dynamic stream name resolution for go2rtc bridge
+  let resolvedStreamName = 'table1';
+  if (rawStreamUrl) {
+    const srcMatch = rawStreamUrl.match(/src=([a-zA-Z0-9_-]+)/i);
+    const channelMatch = rawStreamUrl.match(/channel=(\d+)/i);
+    if (srcMatch) {
+      resolvedStreamName = srcMatch[1];
+    } else if (channelMatch) {
+      const chNum = channelMatch[1];
+      const isSub = rawStreamUrl.includes('subtype=1');
+      resolvedStreamName = isSub ? `table${chNum}_sub` : `table${chNum}`;
+    } else if (!rawStreamUrl.includes('://')) {
+      resolvedStreamName = rawStreamUrl.trim();
+    }
+  } else {
+    const numMatch = table.tableNumber.match(/\d+/);
+    if (numMatch) {
+      const tNum = parseInt(numMatch[0], 10);
+      resolvedStreamName = `table${tNum}`;
+    }
+  }
+
   // Check if we can route to go2rtc WebRTC stream
   let activeVideoSrc = rawStreamUrl || defaultFeeds[table.tableNumber] || defaultFeeds['T-01'];
   let isWebRtcIframe = false;
 
-  if (isDirectRtsp) {
-    const streamName = table.tableNumber === 'T-02' ? 'table1_sub' : 'table1';
-    activeVideoSrc = `${selectedHost}/stream.html?src=${streamName}&mode=webrtc`;
+  if (isDirectRtsp || (rawStreamUrl && !rawStreamUrl.includes('://'))) {
+    activeVideoSrc = `${selectedHost}/stream.html?src=${resolvedStreamName}&mode=webrtc`;
     isWebRtcIframe = true;
   } else if (activeVideoSrc && activeVideoSrc.includes('/stream.html?')) {
     isWebRtcIframe = true;

@@ -163,13 +163,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [tables, setTables] = useState<Table[]>(() => {
     const loaded = loadStored<Table[]>('tables', initialTables);
-    return loaded.map(tbl => ({
-      ...tbl,
-      cctvCameraId: tbl.cctvCameraId || (tbl.tableNumber === 'T-01' ? 'CAM-FL-01 (192.168.68.113)' : `CAM-${tbl.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`),
-      cctvStreamUrl: tbl.cctvStreamUrl || (tbl.tableNumber === 'T-01' ? 'rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=1&subtype=0' : undefined),
-      cctvStatus: tbl.cctvStatus || 'recording',
-      cctvResolution: tbl.cctvResolution || '1080p 30fps'
-    }));
+    return loaded.map(tbl => {
+      const matchInit = initialTables.find(t => t.id === tbl.id);
+      return {
+        ...tbl,
+        cctvCameraId: tbl.cctvCameraId || matchInit?.cctvCameraId || `CAM-${tbl.tableNumber.replace(/[^a-zA-Z0-9]/g, '')}`,
+        cctvStreamUrl: tbl.cctvStreamUrl || matchInit?.cctvStreamUrl,
+        cctvStatus: tbl.cctvStatus || 'recording',
+        cctvResolution: tbl.cctvResolution || '1080p 30fps'
+      };
+    });
   });
   const [customSections, setCustomSections] = useState<string[]>(() => loadStored('custom_sections', defaultSections));
   const [queue, setQueue] = useState<QueueTicket[]>(() => loadStored('queue', initialQueue));

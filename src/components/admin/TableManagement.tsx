@@ -600,6 +600,46 @@ export const TableManagement: React.FC<TableManagementProps> = ({ onNavigateTab 
                 </div>
                 <div>
                   <label className="text-[10px] text-zinc-300 block mb-1">
+                    Quick Camera Channel Preset
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val) return;
+                      if (val.startsWith('ch_')) {
+                        const ch = val.replace('ch_', '');
+                        setNewCameraId(`CAM-CH0${ch}`);
+                        setNewCctvUrl(`rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=${ch}&subtype=0`);
+                      } else if (val.startsWith('stream_')) {
+                        const sName = val.replace('stream_', '');
+                        setNewCameraId(`CAM-${sName.toUpperCase()}`);
+                        setNewCctvUrl(`https://cam.nistta.com/stream.html?src=${sName}&mode=webrtc`);
+                      }
+                    }}
+                    defaultValue=""
+                    className="w-full p-2 bg-cafe-950 rounded-xl border border-cafe-700 font-sans text-xs text-amber-300"
+                  >
+                    <option value="" disabled>-- Select Camera Channel Preset --</option>
+                    <optgroup label="Dahua / CP PLUS NVR (192.168.68.113)">
+                      <option value="ch_1">NVR Channel 1 (Live Real Camera)</option>
+                      <option value="ch_2">NVR Channel 2</option>
+                      <option value="ch_3">NVR Channel 3</option>
+                      <option value="ch_4">NVR Channel 4</option>
+                      <option value="ch_5">NVR Channel 5</option>
+                      <option value="ch_6">NVR Channel 6</option>
+                      <option value="ch_7">NVR Channel 7</option>
+                      <option value="ch_8">NVR Channel 8</option>
+                    </optgroup>
+                    <optgroup label="Cloudflare WebRTC Stream">
+                      <option value="stream_table1">Cloudflare: table1 (Main)</option>
+                      <option value="stream_table2">Cloudflare: table2</option>
+                      <option value="stream_table3">Cloudflare: table3</option>
+                      <option value="stream_table4">Cloudflare: table4</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-300 block mb-1">
                     Camera ID / Channel
                   </label>
                   <input
@@ -909,6 +949,46 @@ export const TableManagement: React.FC<TableManagementProps> = ({ onNavigateTab 
                     <span className="font-bold text-[11px] text-amber-950 block">
                       CCTV Camera Settings:
                     </span>
+                    <div>
+                      <label className="text-[10px] text-cafe-600 block mb-1">
+                        Quick Camera Channel Preset
+                      </label>
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) return;
+                          if (val.startsWith('ch_')) {
+                            const ch = val.replace('ch_', '');
+                            setEditCameraId(`CAM-CH0${ch}`);
+                            setEditCctvUrl(`rtsp://admin:Admin%40123@192.168.68.113:554/cam/realmonitor?channel=${ch}&subtype=0`);
+                          } else if (val.startsWith('stream_')) {
+                            const sName = val.replace('stream_', '');
+                            setEditCameraId(`CAM-${sName.toUpperCase()}`);
+                            setEditCctvUrl(`https://cam.nistta.com/stream.html?src=${sName}&mode=webrtc`);
+                          }
+                        }}
+                        defaultValue=""
+                        className="w-full p-1.5 bg-cafe-50 rounded-lg border border-cafe-300 font-sans text-xs text-amber-900"
+                      >
+                        <option value="" disabled>-- Select Camera Channel Preset --</option>
+                        <optgroup label="Dahua / CP PLUS NVR (192.168.68.113)">
+                          <option value="ch_1">NVR Channel 1 (Live Real Camera)</option>
+                          <option value="ch_2">NVR Channel 2</option>
+                          <option value="ch_3">NVR Channel 3</option>
+                          <option value="ch_4">NVR Channel 4</option>
+                          <option value="ch_5">NVR Channel 5</option>
+                          <option value="ch_6">NVR Channel 6</option>
+                          <option value="ch_7">NVR Channel 7</option>
+                          <option value="ch_8">NVR Channel 8</option>
+                        </optgroup>
+                        <optgroup label="Cloudflare WebRTC Stream">
+                          <option value="stream_table1">Cloudflare: table1 (Main)</option>
+                          <option value="stream_table2">Cloudflare: table2</option>
+                          <option value="stream_table3">Cloudflare: table3</option>
+                          <option value="stream_table4">Cloudflare: table4</option>
+                        </optgroup>
+                      </select>
+                    </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="text-[10px] text-cafe-600 block mb-0.5">Camera ID</label>
